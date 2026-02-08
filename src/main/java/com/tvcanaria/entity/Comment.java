@@ -1,6 +1,8 @@
 package com.tvcanaria.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +18,7 @@ public class Comment {
     private String comment;
 
     @Column(name = "rating", nullable = false, precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) CHECK (rating BETWEEN 0.5 AND 5.0 AND MOD(rating * 10, 5) = 0)")
-    private Double rating;
+    private BigDecimal rating;
 
     @Column(name = "offense_count", nullable = false)
     private Integer offenseCount = 0;
@@ -58,11 +60,11 @@ public class Comment {
         this.comment = comment;
     }
 
-    public Double getRating() {
+    public BigDecimal getRating() {
         return rating;
     }
 
-    public void setRating(Double rating) {
+    public void setRating(BigDecimal rating) {
         this.rating = rating;
     }
 
