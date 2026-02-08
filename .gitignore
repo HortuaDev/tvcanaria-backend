@@ -1,33 +1,51 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# --- ECLIPSE / STS METADATA ---
+.metadata/
+.log
+.lock
+lock_info
+version.ini
 
-### STS ###
+# --- BUILD ARTIFACTS ---
+target/
+build/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+
+# --- STS / ECLIPSE ---
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# --- MAVEN ---
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# --- IntelliJ IDEA ---
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
-### NetBeans ###
+# --- VS Code ---
+.vscode/
+
+# --- NetBeans ---
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# --- SYSTEM FILES ---
+.DS_Store
+Thumbs.db
+HELP.md
