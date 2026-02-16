@@ -56,6 +56,13 @@
         <artifactId>spring-boot-starter-oauth2-client</artifactId>
     </dependency>
     
+     <!-- Google API Client para verificar tokens -->
+    <dependency>
+        <groupId>com.google.api-client</groupId>
+        <artifactId>google-api-client</artifactId>
+        <version>2.2.0</version>
+    </dependency>
+    
     <!-- BCrypt para encriptar contraseñas -->
     <dependency>
 	    <groupId>org.springframework.security</groupId>
