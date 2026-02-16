@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 import com.tvcanaria.security.JwtAuthenticationFilter;
 
 @Configuration
@@ -14,25 +15,35 @@ import com.tvcanaria.security.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            CorsConfigurationSource corsConfigurationSource) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // Habilitar CORS
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            
+            // Deshabilitar CSRF
             .csrf(csrf -> csrf.disable())
+            
+            // Sesión stateless
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Autorización de peticiones
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                // .requestMatchers("/api/admin/**").hasAuthority("ADMIN") // Descomentar cuando funcione
+                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             )
-            // Comentar OAuth2 por ahora
-            // .oauth2Login(oauth2 -> oauth2
-            //     .defaultSuccessUrl("/api/auth/oauth2/success", true)
-            // )
+            
+            // Agregar filtro JWT
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
