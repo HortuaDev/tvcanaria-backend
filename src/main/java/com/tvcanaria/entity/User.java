@@ -13,6 +13,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     private Integer userId;
+    
+    @Column(name = "auth_provider", length = 20)
+    private String authProvider; // "LOCAL" o "GOOGLE"
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId; // ID del proveedor OAuth
 
     @Column(name = "username", nullable = false, unique = true, length = 25)
     private String username;
@@ -75,6 +81,22 @@ public class User {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+    
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public String getUsername() {
