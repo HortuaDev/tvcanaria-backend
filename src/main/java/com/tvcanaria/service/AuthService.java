@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tvcanaria.dto.*;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.exception.*;
 import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.security.JwtTokenProvider;
 
@@ -25,10 +26,10 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         // Validar si el usuario ya existe
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new UserAlreadyExistsException("El email ya está registrado");
         }
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("El username ya está en uso");
+            throw new UserAlreadyExistsException("El nombre de usuario ya está en uso");
         }
 
         // Crear nuevo usuario
@@ -48,34 +49,36 @@ public class AuthService {
         String token = jwtTokenProvider.generateToken(user);
 
         return new AuthResponse(
-            token,
-            user.getUserId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole().name()
-        );
+                token,
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name());
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+        String identifier = request.getUsernameOrEmail();
+
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByUsername(identifier))
+                .orElseThrow(() -> new InvalidCredentialsException("Email/usuario o contraseña incorrectos"));
 
         if (!user.getIsActive()) {
-            throw new RuntimeException("La cuenta está desactivada");
+            throw new AccountDisabledException("Tu cuenta ha sido desactivada. Contacta al administrador");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Credenciales inválidas");
+            throw new InvalidCredentialsException("Email/usuario o contraseña incorrectos");
         }
 
         String token = jwtTokenProvider.generateToken(user);
 
         return new AuthResponse(
-            token,
-            user.getUserId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole().name()
-        );
+                token,
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name());
     }
+
 }

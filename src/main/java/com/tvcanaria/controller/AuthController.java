@@ -1,7 +1,6 @@
 package com.tvcanaria.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.tvcanaria.dto.*;
@@ -21,36 +20,20 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            AuthResponse response = authService.register(request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            AuthResponse response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 
-    // Endpoint para autenticación con Google (recibe idToken del frontend)
     @PostMapping("/google")
-    public ResponseEntity<?> googleAuth(@Valid @RequestBody GoogleTokenRequest request) {
-        try {
-            AuthResponse response = oAuth2Service.authenticateGoogleToken(request.getIdToken());
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<AuthResponse> googleAuth(@Valid @RequestBody GoogleTokenRequest request) {
+        AuthResponse response = oAuth2Service.authenticateGoogleToken(request.getIdToken());
+        return ResponseEntity.ok(response);
     }
 }
