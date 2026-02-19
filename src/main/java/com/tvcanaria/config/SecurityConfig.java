@@ -27,24 +27,25 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Habilitar CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
-            
-            // Deshabilitar CSRF
-            .csrf(csrf -> csrf.disable())
-            
-            // Sesión stateless
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // Autorización de peticiones
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                .anyRequest().authenticated()
-            )
-            
-            // Agregar filtro JWT
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // Habilitar CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+
+                // Deshabilitar CSRF
+                .csrf(csrf -> csrf.disable())
+
+                // Sesión stateless
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Autorización de peticiones
+
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/articles/test").hasAuthority("ADMIN")
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .anyRequest().authenticated())
+
+                // Agregar filtro JWT
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

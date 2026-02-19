@@ -24,19 +24,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
+        String path = request.getServletPath();
+        if (path.startsWith("/api/auth/register") || path.startsWith("/api/auth/login") || path.startsWith("/api/auth/google")) {
+            filterChain.doFilter(request, response); // deja pasar sin validar token
+            return;
+        }
+
         String token = getJwtFromRequest(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Integer userId = jwtTokenProvider.getUserIdFromToken(token);
-            
-            UsernamePasswordAuthenticationToken authentication = 
-                new UsernamePasswordAuthenticationToken(userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-            
+            String role = jwtTokenProvider.getRoleFromToken(token);
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null,
+                    Collections.singletonList(new SimpleGrantedAuthority(role)));
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
+
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
