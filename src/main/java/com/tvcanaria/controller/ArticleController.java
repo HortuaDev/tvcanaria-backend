@@ -1,22 +1,20 @@
 package com.tvcanaria.controller;
 
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import com.tvcanaria.dto.ArticleRequest;
-import com.tvcanaria.entity.Article;
-import com.tvcanaria.repository.ArticleRepository;
-import com.tvcanaria.service.CloudinaryService;
+import com.tvcanaria.dto.ArticleResponse;
+
+import com.tvcanaria.service.ArticleService;
 
 import jakarta.validation.Valid;
 
@@ -24,17 +22,19 @@ import jakarta.validation.Valid;
 @RequestMapping("/articles")
 public class ArticleController {
 
-    private final CloudinaryService cloudinaryService;
-    private final ArticleRepository articleRepository;
+    private final ArticleService articleService;
 
-    public ArticleController(CloudinaryService cloudinaryService, ArticleRepository articleRepository) {
-        this.cloudinaryService = cloudinaryService;
-        this.articleRepository = articleRepository;
+    public ArticleController(ArticleService articleService) {
+        this.articleService = articleService;
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<ArticleRequest> uploadArticle(@Valid @RequestBody ArticleRequest articleRequest) {
+    public ResponseEntity<ArticleResponse> uploadArticle(@Valid @RequestBody ArticleRequest articleRequest,
+            Authentication authentication) {
 
+        ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }
 
     @GetMapping("/test")
