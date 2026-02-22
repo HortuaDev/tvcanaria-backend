@@ -1,20 +1,31 @@
 package com.tvcanaria.controller;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.tvcanaria.dto.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
+import com.tvcanaria.entity.Category;
 import com.tvcanaria.repository.ArticleRepository;
+import com.tvcanaria.repository.CategoryRepository;
+import com.tvcanaria.service.ArticleService;
+import com.tvcanaria.service.CategoryService;
 import com.tvcanaria.service.CloudinaryService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/articles")
@@ -22,10 +33,13 @@ public class ArticleController {
 
     private final CloudinaryService cloudinaryService;
     private final ArticleRepository articleRepository;
+    private final ArticleService articleService;
 
-    public ArticleController(CloudinaryService cloudinaryService, ArticleRepository articleRepository) {
+    public ArticleController(CloudinaryService cloudinaryService, ArticleRepository articleRepository,
+            ArticleService articleService) {
         this.cloudinaryService = cloudinaryService;
         this.articleRepository = articleRepository;
+        this.articleService = articleService;
     }
 
     @PostMapping("/{id}/upload-video")
@@ -45,6 +59,14 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error uploading video: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Article> updateArticle(
+            @PathVariable Integer id,
+            @Valid @RequestBody ArticleUpdateRequest request) {
+        Article updated = articleService.updateArticle(id, request);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/test")
