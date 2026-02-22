@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "article")
 public class Article {
@@ -34,6 +36,7 @@ public class Article {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "author_id", nullable = false)
+    @JsonBackReference
     private User author;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)

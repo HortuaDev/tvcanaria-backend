@@ -1,9 +1,13 @@
 package com.tvcanaria.entity;
 
 import jakarta.persistence.*;
+import net.minidev.json.annotate.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "user")
@@ -13,7 +17,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     private Integer userId;
-    
+
     @Column(name = "auth_provider", length = 20)
     private String authProvider; // "LOCAL" o "GOOGLE"
 
@@ -46,9 +50,11 @@ public class User {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<Article> articles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Set<Comment> comments = new HashSet<>();
 
     @ManyToMany
@@ -82,7 +88,7 @@ public class User {
     public void setUserId(Integer userId) {
         this.userId = userId;
     }
-    
+
     public String getAuthProvider() {
         return authProvider;
     }
