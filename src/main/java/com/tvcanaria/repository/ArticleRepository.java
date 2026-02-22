@@ -7,7 +7,5 @@ import com.tvcanaria.entity.Article;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Integer> {
-    // Aqui se agregan las consultas personalizadas cunado las necesitemos
 
-    // Ejmp: List<Article> findByTitleContaining(String keyword);
 }
