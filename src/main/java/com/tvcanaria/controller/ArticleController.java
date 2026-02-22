@@ -7,14 +7,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.tvcanaria.dto.ArticleRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.repository.ArticleRepository;
 import com.tvcanaria.service.CloudinaryService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/articles")
@@ -28,23 +32,9 @@ public class ArticleController {
         this.articleRepository = articleRepository;
     }
 
-    @PostMapping("/{id}/upload-video")
-    public ResponseEntity<String> uploadVideo(
-            @PathVariable Integer id,
-            @RequestParam("file") MultipartFile file) {
-        try {
-            Map<String, Object> uploadResult = cloudinaryService.uploadVideo(file);
-            String videoUrl = uploadResult.get("url").toString();
+    @PostMapping("/upload")
+    public ResponseEntity<ArticleRequest> uploadArticle(@Valid @RequestBody ArticleRequest articleRequest) {
 
-            Article article = articleRepository.findById(id).orElseThrow();
-            article.setVideoUrl(videoUrl);
-            articleRepository.save(article);
-
-            return ResponseEntity.ok(videoUrl);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error uploading video: " + e.getMessage());
-        }
     }
 
     @GetMapping("/test")
