@@ -43,4 +43,11 @@ public class ArticleService {
         return articleRepository.save(article); // esto actualiza todo
     }
 
+    public void deleteArticle(Integer id) {
+        if (!articleRepository.existsById(id)) {
+            throw new RuntimeException("Article not found");
+        }
+        articleRepository.deleteById(id);
+    }
+
 }
