@@ -55,4 +55,8 @@ public class ArticleService {
         return articleRepository.findAll();
     }
 
+    public List<Article> getVisibleArticles() {
+        return articleRepository.findByIsHiddenFalse();
+    }
+
 }
