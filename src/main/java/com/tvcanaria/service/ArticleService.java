@@ -1,5 +1,6 @@
 package com.tvcanaria.service;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -48,6 +49,10 @@ public class ArticleService {
             throw new RuntimeException("Article not found");
         }
         articleRepository.deleteById(id);
+    }
+
+    public List<Article> getAllArticles() {
+        return articleRepository.findAll();
     }
 
 }
