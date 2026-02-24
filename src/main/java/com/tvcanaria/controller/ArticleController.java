@@ -76,6 +76,22 @@ public class ArticleController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping
+    public ResponseEntity<?> getAllArticles(
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Boolean onlyVisible) {
+
+        if (categoryId != null) {
+            return ResponseEntity.ok(articleService.getArticlesByCategory(categoryId));
+        }
+
+        if (Boolean.TRUE.equals(onlyVisible)) {
+            return ResponseEntity.ok(articleService.getVisibleArticles());
+        }
+
+        return ResponseEntity.ok(articleService.getAllArticles());
+    }
+
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
         try {
