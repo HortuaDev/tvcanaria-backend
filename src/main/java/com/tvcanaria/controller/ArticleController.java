@@ -92,6 +92,11 @@ public class ArticleController {
         return ResponseEntity.ok(articleService.getAllArticles());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Article> getArticleById(@PathVariable Integer id) {
+        return ResponseEntity.ok(articleService.getArticleById(id));
+    }
+
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
         try {
