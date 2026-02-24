@@ -12,4 +12,6 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
 
     List<Article> findByIsHiddenFalse();
 
+    List<Article> findByCategoriesCategoryId(Integer categoryId);
+
 }
