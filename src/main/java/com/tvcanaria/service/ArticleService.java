@@ -59,4 +59,9 @@ public class ArticleService {
         return articleRepository.findByIsHiddenFalse();
     }
 
+    public Article getArticleById(Integer id) {
+        return articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+    }
+
 }
