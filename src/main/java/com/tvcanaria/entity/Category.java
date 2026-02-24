@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "category")
 public class Category {
@@ -20,6 +22,7 @@ public class Category {
     private Set<User> users = new HashSet<>();
 
     @ManyToMany(mappedBy = "categories")
+    @JsonIgnore
     private Set<Article> articles = new HashSet<>();
 
     public Integer getCategoryId() {
