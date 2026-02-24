@@ -81,4 +81,50 @@ public class AuthService {
                 user.getRole().name());
     }
 
+    public UserProfileResponse getUserProfile(String identifier) {
+        try {
+            // El identifier es el userId en formato String
+            Integer userId = Integer.parseInt(identifier);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            return new UserProfileResponse(user);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Identificador de usuario inválido");
+        }
+    }
+
+    public UserProfileResponse updateUserProfile(String identifier, UpdateProfileRequest request) {
+        try {
+            Integer userId = Integer.parseInt(identifier);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            // Actualizar nombre
+            if (request.getFirstName() != null) {
+                user.setFirstName(request.getFirstName());
+            }
+
+            // Actualizar apellidos
+            if (request.getLastName() != null) {
+                user.setLastName(request.getLastName());
+            }
+
+            // Actualizar email si es diferente
+            if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+                if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                    throw new RuntimeException("El correo electrónico ya está en uso");
+                }
+                user.setEmail(request.getEmail());
+            }
+
+            User updatedUser = userRepository.save(user);
+            return new UserProfileResponse(updatedUser);
+
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Identificador de usuario inválido");
+        }
+    }
 }
