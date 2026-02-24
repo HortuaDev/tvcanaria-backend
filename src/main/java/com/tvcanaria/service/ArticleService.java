@@ -64,4 +64,8 @@ public class ArticleService {
                 .orElseThrow(() -> new RuntimeException("Article not found"));
     }
 
+    public List<Article> getArticlesByCategory(Integer categoryId) {
+        return articleRepository.findByCategoriesCategoryId(categoryId);
+    }
+
 }
