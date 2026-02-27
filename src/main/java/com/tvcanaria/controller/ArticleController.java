@@ -71,8 +71,14 @@ public class ArticleController {
     public ResponseEntity<ArticleResponse> uploadArticle(@Valid @RequestBody ArticleRequest articleRequest,
             Authentication authentication) {
 
-        ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (user.getRole() != User.Role.REPORTER && user.getRole() != User.Role.ADMIN) {
+            throw new RuntimeException("No tiene permisos para crear artículos");
+        }
+
+        ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }
 
