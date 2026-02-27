@@ -23,8 +23,10 @@ import com.tvcanaria.dto.ArticleResponse;
 import com.tvcanaria.dto.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
+import com.tvcanaria.entity.User;
 import com.tvcanaria.repository.ArticleRepository;
 import com.tvcanaria.repository.CategoryRepository;
+import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.service.ArticleService;
 import com.tvcanaria.service.CategoryService;
 import com.tvcanaria.service.CloudinaryService;
@@ -35,15 +37,34 @@ import jakarta.validation.Valid;
 @RequestMapping("/articles")
 public class ArticleController {
 
-    private final CloudinaryService cloudinaryService;
     private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
     private final ArticleService articleService;
 
     public ArticleController(CloudinaryService cloudinaryService, ArticleRepository articleRepository,
-            ArticleService articleService) {
+            ArticleService articleService, UserRepository userRepository) {
         this.cloudinaryService = cloudinaryService;
         this.articleRepository = articleRepository;
         this.articleService = articleService;
+        this.userRepository = userRepository;
+    }
+
+    private void checkPermission(Integer articleId, Authentication auth) {
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == User.Role.ADMIN)
+            return;
+
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        if (article.getAuthor().getUsername().equals(username))
+            return;
+
+        throw new RuntimeException("No tiene permisos para esta acción");
     }
 
     @PostMapping("/upload")
