@@ -104,9 +104,11 @@ public class ArticleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Article> updateArticle(
-            @PathVariable Integer id,
-            @Valid @RequestBody ArticleUpdateRequest request) {
+    public ResponseEntity<Article> updateArticle(@PathVariable Integer id,
+            @Valid @RequestBody ArticleUpdateRequest request,
+            Authentication authentication) {
+
+        checkPermission(id, authentication);
         Article updated = articleService.updateArticle(id, request);
         return ResponseEntity.ok(updated);
     }
