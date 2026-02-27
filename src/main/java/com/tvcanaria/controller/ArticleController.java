@@ -114,7 +114,8 @@ public class ArticleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteArticle(@PathVariable Integer id, Authentication authentication) {
+        checkPermission(id, authentication); // solo ADMIN o autor
         articleService.deleteArticle(id);
         return ResponseEntity.noContent().build();
     }
