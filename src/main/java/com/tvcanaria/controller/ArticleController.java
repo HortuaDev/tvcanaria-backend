@@ -83,9 +83,11 @@ public class ArticleController {
     }
 
     @PostMapping("/{id}/upload-video")
-    public ResponseEntity<String> uploadVideo(
-            @PathVariable Integer id,
-            @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadVideo(@PathVariable Integer id,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+        checkPermission(id, authentication); // solo ADMIN o autor
+
         try {
             Map<String, Object> uploadResult = cloudinaryService.uploadVideo(file);
             String videoUrl = uploadResult.get("url").toString();
