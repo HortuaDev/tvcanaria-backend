@@ -1,25 +1,33 @@
 package com.tvcanaria.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tvcanaria.dto.ArticleRequest;
+import com.tvcanaria.dto.ArticleResponse;
 import com.tvcanaria.dto.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
+import com.tvcanaria.entity.User;
 import com.tvcanaria.repository.ArticleRepository;
+import com.tvcanaria.repository.UserRepository;
 
 @Service
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
     private final CategoryService categoryService;
 
-    public ArticleService(ArticleRepository articleRepository, CategoryService categoryService) {
+    public ArticleService(ArticleRepository articleRepository, CategoryService categoryService,
+            UserRepository userRepository) {
         this.articleRepository = articleRepository;
         this.categoryService = categoryService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
