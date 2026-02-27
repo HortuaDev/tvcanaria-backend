@@ -30,6 +30,12 @@ public class ArticleService {
         this.userRepository = userRepository;
     }
 
+    public boolean isAuthor(Integer articleId, String username) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+        return article.getAuthor().getUsername().equals(username);
+    }
+
     @Transactional
     public Article updateArticle(Integer id, ArticleUpdateRequest request) {
         Article article = articleRepository.findById(id)
