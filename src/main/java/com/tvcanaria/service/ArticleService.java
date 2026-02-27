@@ -51,6 +51,26 @@ public class ArticleService {
         articleRepository.deleteById(id);
     }
 
+    public ArticleResponse createArticle(ArticleRequest request, String authentication) {
+
+        User user = userRepository.findByUsername(authentication)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Article article = new Article();
+        article.setTitle(request.getTitle());
+        article.setDescription(request.getDescription());
+        article.setVideoUrl(request.getVideo_url());
+        article.setLocation(request.getLocation());
+        article.setIsHidden(false);
+        article.setCreatedAt(LocalDateTime.now());
+        article.setAuthor(user);
+
+        articleRepository.save(article);
+
+        return new ArticleResponse(article.getArticleId(), article.getTitle(), article.getDescription(),
+                article.getVideoUrl(), article.getLocation(), authentication);
+    }
+
     public List<Article> getAllArticles() {
         return articleRepository.findAll();
     }
