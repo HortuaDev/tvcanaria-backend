@@ -54,9 +54,11 @@ public class ContentController {
     public ResponseEntity<String> uploadVideo(@PathVariable Integer id,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
-        checkPermission(id, authentication); // solo ADMIN o autor
+        checkPermission(id, authentication); // solo ADMIN o autor  
 
         try {
+            if (file.isEmpty()) throw new RuntimeException("El archivo está vacío");
+            
             Map<String, Object> uploadResult = cloudinaryService.uploadVideo(file);
             String videoUrl = uploadResult.get("url").toString();
 
