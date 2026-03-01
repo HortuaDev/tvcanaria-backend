@@ -45,6 +45,7 @@ public class CloudinaryService {
             );
 
             articleService.deleteArticle(id);
+            
         } catch (IOException e) {
             throw new RuntimeException("Error al conectar con Cloudinary para eliminar el archivo.");
         }

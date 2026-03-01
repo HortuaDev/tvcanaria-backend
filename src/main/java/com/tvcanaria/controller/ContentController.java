@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +34,7 @@ public class ContentController {
         this.articleRepository = articleRepository;
     }
 
-    private void checkPermission(Integer articleId, Authentication auth) {
+    private void checkPermission(Integer articleId, Authentication auth) {  // solo ADMIN o autor
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -54,11 +55,12 @@ public class ContentController {
     public ResponseEntity<String> uploadVideo(@PathVariable Integer id,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
-        checkPermission(id, authentication); // solo ADMIN o autor  
+        checkPermission(id, authentication);
 
         try {
-            if (file.isEmpty()) throw new RuntimeException("El archivo está vacío");
-            
+            if (file.isEmpty())
+                throw new RuntimeException("El archivo está vacío");
+
             Map<String, Object> uploadResult = cloudinaryService.uploadVideo(file);
             String videoUrl = uploadResult.get("url").toString();
 
@@ -72,4 +74,18 @@ public class ContentController {
                     .body("Error uploading video: " + e.getMessage());
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteContent(@PathVariable Integer id, Authentication authentication) {
+        checkPermission(id, authentication);
+
+        try {
+            cloudinaryService.deleteVideoFromArticle(id);
+            return ResponseEntity.ok("Artículo y video eliminados correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al eliminar: " + e.getMessage());
+        }
+    }
+
 }
