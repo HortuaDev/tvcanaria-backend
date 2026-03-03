@@ -35,8 +35,7 @@ public class ContentController {
     }
 
     private void checkPermission(Integer articleId, Authentication auth) {  // solo ADMIN o autor
-        String username = auth.getName();
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getRole() == User.Role.ADMIN)
@@ -45,7 +44,7 @@ public class ContentController {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (article.getAuthor().getUsername().equals(username))
+        if (article.getAuthor().getUsername().equals(user.getUsername()))
             return;
 
         throw new RuntimeException("No tiene permisos para esta acción");
@@ -81,6 +80,7 @@ public class ContentController {
 
         try {
             cloudinaryService.deleteVideoFromArticle(id);
+            articleRepository.deleteById(id);
             return ResponseEntity.ok("Artículo y video eliminados correctamente");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
