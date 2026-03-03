@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.tvcanaria.entity.Article;
+import com.tvcanaria.repository.ArticleRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -16,11 +17,11 @@ import jakarta.transaction.Transactional;
 public class CloudinaryService {
 
     private final Cloudinary cloudinary;
-    private final ArticleService articleService;
+    private final ArticleRepository articleRepository;
 
-    public CloudinaryService(Cloudinary cloudinary, ArticleService articleService) {
+    public CloudinaryService(Cloudinary cloudinary, ArticleRepository articleRepository) {
         this.cloudinary = cloudinary;
-        this.articleService = articleService;
+        this.articleRepository = articleRepository;
     }
 
     @SuppressWarnings("unchecked")
@@ -32,7 +33,7 @@ public class CloudinaryService {
 
     @Transactional
     public void deleteVideoFromArticle(Integer id) {
-        Article article = articleService.getArticleById(id);
+        Article article = articleRepository.getReferenceById(id);
 
         if (article.getVideoUrl() == null) {
             throw new RuntimeException("El artículo no tiene un video asociado en la nube.");
@@ -41,11 +42,10 @@ public class CloudinaryService {
         try {
             cloudinary.uploader().destroy(
                     article.getVideoUrl(),
-                    ObjectUtils.asMap("resource_type", "video")
-            );
+                    ObjectUtils.asMap("resource_type", "video"));
 
-            articleService.deleteArticle(id);
-            
+            articleRepository.deleteById(id);
+
         } catch (IOException e) {
             throw new RuntimeException("Error al conectar con Cloudinary para eliminar el archivo.");
         }

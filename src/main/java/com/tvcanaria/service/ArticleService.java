@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
 
 import com.tvcanaria.dto.ArticleRequest;
 import com.tvcanaria.dto.ArticleResponse;
@@ -36,8 +37,26 @@ public class ArticleService {
         return article.getAuthor().getUsername().equals(username);
     }
 
+    private void checkPermission(Integer articleId, Authentication auth) { // solo ADMIN o autor
+        User user = userRepository.findById(Integer.valueOf(auth.getName()))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == User.Role.ADMIN)
+            return;
+
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        if (article.getAuthor().getUsername().equals(user.getUsername()))
+            return;
+
+        throw new RuntimeException("No tiene permisos para esta acción");
+    }
+
     @Transactional
-    public Article updateArticle(Integer id, ArticleUpdateRequest request) {
+    public Article updateArticle(Integer id, ArticleUpdateRequest request, Authentication auth) {
+        checkPermission(id, auth);
+
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
@@ -58,16 +77,16 @@ public class ArticleService {
         return articleRepository.save(article); // esto actualiza todo
     }
 
-    public void deleteArticle(Integer id) {
-        if (!articleRepository.existsById(id)) {
-            throw new RuntimeException("Article not found");
-        }
+    public void deleteArticle(Integer id, Authentication auth) {
+        checkPermission(id, auth);
+
         articleRepository.deleteById(id);
+
     }
 
     public ArticleResponse createArticle(ArticleRequest request, String authentication) {
 
-        User user = userRepository.findByUsername(authentication)
+        User user = userRepository.findById(Integer.valueOf(authentication))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Article article = new Article();
@@ -82,7 +101,7 @@ public class ArticleService {
         articleRepository.save(article);
 
         return new ArticleResponse(article.getArticleId(), article.getTitle(), article.getDescription(),
-                article.getVideoUrl(), article.getLocation(), authentication);
+                article.getVideoUrl(), article.getLocation(), user.getUsername());
     }
 
     public List<Article> getAllArticles() {

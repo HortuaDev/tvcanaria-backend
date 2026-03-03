@@ -17,11 +17,7 @@ import com.tvcanaria.dto.ArticleRequest;
 import com.tvcanaria.dto.ArticleResponse;
 import com.tvcanaria.dto.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
-import com.tvcanaria.entity.User;
-import com.tvcanaria.repository.ArticleRepository;
-import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.service.ArticleService;
-
 
 import jakarta.validation.Valid;
 
@@ -29,65 +25,43 @@ import jakarta.validation.Valid;
 @RequestMapping("/articles")
 public class ArticleController {
 
-    private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
     private final ArticleService articleService;
 
-    public ArticleController(ArticleRepository articleRepository,
-            ArticleService articleService, UserRepository userRepository) {
-        this.articleRepository = articleRepository;
+    public ArticleController(
+            ArticleService articleService) {
         this.articleService = articleService;
-        this.userRepository = userRepository;
-    }
-
-    private void checkPermission(Integer articleId, Authentication auth) {
-        String username = auth.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() == User.Role.ADMIN)
-            return;
-
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
-
-        if (article.getAuthor().getUsername().equals(username))
-            return;
-
-        throw new RuntimeException("No tiene permisos para esta acción");
     }
 
     @PostMapping("/upload")
     public ResponseEntity<ArticleResponse> uploadArticle(@Valid @RequestBody ArticleRequest articleRequest,
             Authentication authentication) {
-
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() != User.Role.REPORTER && user.getRole() != User.Role.ADMIN) {
-            throw new RuntimeException("No tiene permisos para crear artículos");
-        }
-
         ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(article);
-    }
 
-    
+        if (article != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(article);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<Article> updateArticle(@PathVariable Integer id,
             @Valid @RequestBody ArticleUpdateRequest request,
             Authentication authentication) {
 
-        checkPermission(id, authentication);
-        Article updated = articleService.updateArticle(id, request);
-        return ResponseEntity.ok(updated);
+        Article updated = articleService.updateArticle(id, request, authentication);
+
+        if (updated != null) {
+            return ResponseEntity.ok(updated);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArticle(@PathVariable Integer id, Authentication authentication) {
-        checkPermission(id, authentication); // solo ADMIN o autor
-        articleService.deleteArticle(id);
+        articleService.deleteArticle(id, authentication);
         return ResponseEntity.noContent().build();
     }
 

@@ -1,7 +1,5 @@
 package com.tvcanaria.controller;
 
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,75 +11,44 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.tvcanaria.entity.Article;
-import com.tvcanaria.entity.User;
-import com.tvcanaria.repository.ArticleRepository;
-import com.tvcanaria.repository.UserRepository;
-import com.tvcanaria.service.CloudinaryService;
+
+import com.tvcanaria.service.ContentService;
 
 @RestController
 @RequestMapping("/content")
 public class ContentController {
 
-    private final CloudinaryService cloudinaryService;
-    private final UserRepository userRepository;
-    private final ArticleRepository articleRepository;
+    private final ContentService contentService;
 
-    public ContentController(CloudinaryService cloudinaryService, UserRepository userRepository,
-            ArticleRepository articleRepository) {
-        this.cloudinaryService = cloudinaryService;
-        this.userRepository = userRepository;
-        this.articleRepository = articleRepository;
-    }
-
-    private void checkPermission(Integer articleId, Authentication auth) {  // solo ADMIN o autor
-        User user = userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() == User.Role.ADMIN)
-            return;
-
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
-
-        if (article.getAuthor().getUsername().equals(user.getUsername()))
-            return;
-
-        throw new RuntimeException("No tiene permisos para esta acción");
+    public ContentController(ContentService contentService) {
+        this.contentService = contentService;
     }
 
     @PostMapping("/{id}/upload-video")
     public ResponseEntity<String> uploadVideo(@PathVariable Integer id,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
-        checkPermission(id, authentication);
 
-        try {
-            if (file.isEmpty())
-                throw new RuntimeException("El archivo está vacío");
+        String url_video = contentService.submitVideo(id, file, authentication);
 
-            Map<String, Object> uploadResult = cloudinaryService.uploadVideo(file);
-            String videoUrl = uploadResult.get("url").toString();
-
-            Article article = articleRepository.findById(id).orElseThrow();
-            article.setVideoUrl(videoUrl);
-            articleRepository.save(article);
-
-            return ResponseEntity.ok(videoUrl);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error uploading video: " + e.getMessage());
+        if (url_video != null) {
+            return ResponseEntity.ok(url_video);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteContent(@PathVariable Integer id, Authentication authentication) {
-        checkPermission(id, authentication);
 
         try {
-            cloudinaryService.deleteVideoFromArticle(id);
-            articleRepository.deleteById(id);
-            return ResponseEntity.ok("Artículo y video eliminados correctamente");
+            if (contentService.deleteVideo(id, authentication)) {
+
+                return ResponseEntity.ok("Artículo y video eliminados correctamente");
+            } else {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al eliminar: " + e.getMessage());
