@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 
 public class ArticleUpdateRequest {
 
-    private Integer articleId;
 
     @NotBlank(message = "El título es obligatorio")
     @Size(max = 150, message = "El título no puede superar 150 caracteres")
@@ -23,10 +22,6 @@ public class ArticleUpdateRequest {
     private Boolean isHidden;
 
     // Getters y Setters
-
-    public int getId() {
-        return articleId;
-    }
 
     public String getTitle() {
         return title;

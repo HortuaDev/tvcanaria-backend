@@ -3,6 +3,7 @@ package com.tvcanaria.service;
 import java.util.Map;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.tvcanaria.entity.Article;
@@ -10,6 +11,7 @@ import com.tvcanaria.entity.User;
 import com.tvcanaria.repository.ArticleRepository;
 import com.tvcanaria.repository.UserRepository;
 
+@Service
 public class ContentService {
 
     private final CloudinaryService cloudinaryService;
