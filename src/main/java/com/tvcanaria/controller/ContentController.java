@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.tvcanaria.service.ContentService;
 
 @RestController
-@RequestMapping("/content")
+@RequestMapping("/api/content")
 public class ContentController {
 
     private final ContentService contentService;

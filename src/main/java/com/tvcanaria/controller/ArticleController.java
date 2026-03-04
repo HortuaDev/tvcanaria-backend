@@ -22,7 +22,7 @@ import com.tvcanaria.service.ArticleService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/articles")
+@RequestMapping("/api/articles")
 public class ArticleController {
 
     private final ArticleService articleService;
