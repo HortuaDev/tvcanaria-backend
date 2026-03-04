@@ -1,5 +1,4 @@
-package com.tvcanaria.dto;
-
+package com.tvcanaria.dto.article;
 
 public class ArticleResponse {
     private Integer id;
@@ -8,7 +7,6 @@ public class ArticleResponse {
     private String videoUrl;
     private String location;
     private String authorUsername;
-
 
     public ArticleResponse(Integer id, String title, String description, String videoUrl, String location,
             String authorUsername) {

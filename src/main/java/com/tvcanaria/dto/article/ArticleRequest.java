@@ -1,4 +1,4 @@
-package com.tvcanaria.dto;
+package com.tvcanaria.dto.article;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

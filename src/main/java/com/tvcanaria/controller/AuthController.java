@@ -5,6 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.tvcanaria.dto.*;
+import com.tvcanaria.dto.auth.AuthResponse;
+import com.tvcanaria.dto.auth.GoogleTokenRequest;
+import com.tvcanaria.dto.auth.LoginRequest;
+import com.tvcanaria.dto.auth.RegisterRequest;
+import com.tvcanaria.dto.profile.UpdateProfileRequest;
+import com.tvcanaria.dto.profile.UserProfileResponse;
 import com.tvcanaria.service.AuthService;
 import com.tvcanaria.service.OAuth2Service;
 

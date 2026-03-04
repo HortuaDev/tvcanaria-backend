@@ -1,4 +1,4 @@
-package com.tvcanaria.dto;
+package com.tvcanaria.dto.profile;
 
 import com.tvcanaria.entity.User;
 import java.time.LocalDateTime;

@@ -1,13 +1,14 @@
-package com.tvcanaria.dto;
+package com.tvcanaria.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 
 public class GoogleTokenRequest {
-    
+
     @NotBlank(message = "El idToken es requerido")
     private String idToken;
 
-    public GoogleTokenRequest() {}
+    public GoogleTokenRequest() {
+    }
 
     public GoogleTokenRequest(String idToken) {
         this.idToken = idToken;

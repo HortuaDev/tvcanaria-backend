@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tvcanaria.dto.ArticleRequest;
-import com.tvcanaria.dto.ArticleResponse;
-import com.tvcanaria.dto.ArticleUpdateRequest;
+import com.tvcanaria.dto.article.ArticleRequest;
+import com.tvcanaria.dto.article.ArticleResponse;
+import com.tvcanaria.dto.article.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.service.ArticleService;
 

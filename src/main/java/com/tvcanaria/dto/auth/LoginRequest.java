@@ -1,4 +1,4 @@
-package com.tvcanaria.dto;
+package com.tvcanaria.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

@@ -8,7 +8,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.tvcanaria.dto.AuthResponse;
+
+import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.service.OAuth2Service;
 
 import java.io.IOException;
@@ -24,10 +25,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
-        
+            Authentication authentication) throws IOException, ServletException {
+
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        
+
         // Procesar usuario de Google y generar JWT
         AuthResponse authResponse = oAuth2Service.processGoogleUser(oAuth2User);
 

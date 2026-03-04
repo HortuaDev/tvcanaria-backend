@@ -8,10 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.security.JwtTokenProvider;
-import com.tvcanaria.dto.AuthResponse;
 
 import java.util.Collections;
 
@@ -43,12 +44,11 @@ public class OAuth2Service {
         String token = jwtTokenProvider.generateToken(user);
 
         return new AuthResponse(
-            token,
-            user.getUserId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole().name()
-        );
+                token,
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name());
     }
 
     /**
@@ -58,19 +58,19 @@ public class OAuth2Service {
     public AuthResponse authenticateGoogleToken(String idTokenString) {
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(), 
+                    new NetHttpTransport(),
                     GsonFactory.getDefaultInstance())
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
 
             GoogleIdToken idToken = verifier.verify(idTokenString);
-            
+
             if (idToken == null) {
                 throw new RuntimeException("Token de Google inválido");
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
-            
+
             String email = payload.getEmail();
             String googleId = payload.getSubject();
             String firstName = (String) payload.get("given_name");
@@ -80,13 +80,12 @@ public class OAuth2Service {
             String token = jwtTokenProvider.generateToken(user);
 
             return new AuthResponse(
-                token,
-                user.getUserId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole().name()
-            );
-            
+                    token,
+                    user.getUserId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getRole().name());
+
         } catch (Exception e) {
             throw new RuntimeException("Error validando token de Google: " + e.getMessage());
         }
@@ -97,29 +96,29 @@ public class OAuth2Service {
      */
     private User findOrCreateGoogleUser(String email, String googleId, String firstName, String lastName) {
         return userRepository.findByProviderId(googleId)
-            .orElseGet(() -> {
-                return userRepository.findByEmail(email)
-                    .map(existingUser -> {
-                        // Vincular cuenta existente con Google
-                        existingUser.setAuthProvider("GOOGLE");
-                        existingUser.setProviderId(googleId);
-                        return userRepository.save(existingUser);
-                    })
-                    .orElseGet(() -> {
-                        // Crear nuevo usuario
-                        User newUser = new User();
-                        newUser.setEmail(email);
-                        newUser.setUsername(generateUsername(email));
-                        newUser.setFirstName(firstName != null ? firstName : "");
-                        newUser.setLastName(lastName != null ? lastName : "");
-                        newUser.setAuthProvider("GOOGLE");
-                        newUser.setProviderId(googleId);
-                        newUser.setPasswordHash("OAUTH2_USER");
-                        newUser.setRole(User.Role.READER);
-                        newUser.setIsActive(true);
-                        return userRepository.save(newUser);
-                    });
-            });
+                .orElseGet(() -> {
+                    return userRepository.findByEmail(email)
+                            .map(existingUser -> {
+                                // Vincular cuenta existente con Google
+                                existingUser.setAuthProvider("GOOGLE");
+                                existingUser.setProviderId(googleId);
+                                return userRepository.save(existingUser);
+                            })
+                            .orElseGet(() -> {
+                                // Crear nuevo usuario
+                                User newUser = new User();
+                                newUser.setEmail(email);
+                                newUser.setUsername(generateUsername(email));
+                                newUser.setFirstName(firstName != null ? firstName : "");
+                                newUser.setLastName(lastName != null ? lastName : "");
+                                newUser.setAuthProvider("GOOGLE");
+                                newUser.setProviderId(googleId);
+                                newUser.setPasswordHash("OAUTH2_USER");
+                                newUser.setRole(User.Role.READER);
+                                newUser.setIsActive(true);
+                                return userRepository.save(newUser);
+                            });
+                });
     }
 
     private String generateUsername(String email) {

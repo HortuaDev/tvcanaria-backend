@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 
-import com.tvcanaria.dto.ArticleRequest;
-import com.tvcanaria.dto.ArticleResponse;
-import com.tvcanaria.dto.ArticleUpdateRequest;
+import com.tvcanaria.dto.article.ArticleRequest;
+import com.tvcanaria.dto.article.ArticleResponse;
+import com.tvcanaria.dto.article.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;

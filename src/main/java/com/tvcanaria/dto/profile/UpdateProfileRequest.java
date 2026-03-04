@@ -1,4 +1,4 @@
-package com.tvcanaria.dto;
+package com.tvcanaria.dto.profile;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
