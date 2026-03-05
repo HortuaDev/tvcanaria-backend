@@ -64,6 +64,13 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserBlock userBlock;
 
+    @ManyToMany
+    @JoinTable(name = "moderator_reporter", joinColumns = @JoinColumn(name = "moderator_id"), inverseJoinColumns = @JoinColumn(name = "reporter_id"))
+    private Set<User> assignedReporters = new HashSet<>();
+
+    @ManyToMany(mappedBy = "assignedReporters")
+    private Set<User> moderators = new HashSet<>();
+
     public enum Role {
         READER, REPORTER, MODERATOR, ADMIN
     }
@@ -199,6 +206,22 @@ public class User {
 
     public void setUserBlock(UserBlock userBlock) {
         this.userBlock = userBlock;
+    }
+
+    public Set<User> getAssignedReporters() {
+        return assignedReporters;
+    }
+
+    public void setAssignedReporters(Set<User> assignedReporters) {
+        this.assignedReporters = assignedReporters;
+    }
+
+    public Set<User> getModerators() {
+        return moderators;
+    }
+
+    public void setModerators(Set<User> moderators) {
+        this.moderators = moderators;
     }
 
 }
