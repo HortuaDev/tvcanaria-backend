@@ -16,6 +16,7 @@ import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.repository.ArticleRepository;
 import com.tvcanaria.repository.UserRepository;
+import java.util.stream.Collectors;
 
 @Service
 public class ArticleService {
@@ -101,8 +102,7 @@ public class ArticleService {
 
         articleRepository.save(article);
 
-        return new ArticleResponse(article.getArticleId(), article.getTitle(), article.getDescription(),
-                article.getVideoUrl(), article.getLocation(), user.getUsername(), article.getRating());
+        return new ArticleResponse(article);
     }
 
     public List<Article> getAllArticles() {
@@ -120,6 +120,27 @@ public class ArticleService {
 
     public List<Article> getArticlesByCategory(Integer categoryId) {
         return articleRepository.findByCategoriesCategoryId(categoryId);
+    }
+
+    public ArticleResponse getArticleResponseById(Integer id) {
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        return new ArticleResponse(article);
+    }
+
+    public List<ArticleResponse> getAllArticleResponses() {
+        return articleRepository.findAll()
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ArticleResponse> getVisibleArticleResponses() {
+        return articleRepository.findByIsHiddenFalse()
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
     }
 
 }
