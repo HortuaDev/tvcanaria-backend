@@ -18,21 +18,39 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
+    // ---- Añadir comentario
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest commentRequest) {
         CommentResponse createdComment = commentService.createComment(commentRequest);
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 
+    // ---- Reportar comentario
+    @PostMapping("/{commentId}/report")
+    public ResponseEntity<?> reportComment(@PathVariable Integer commentId) {
+        commentService.reportComment(commentId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ---- Eliminar un comentario
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable Integer commentId) {
+        commentService.deleteComment(commentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ---- Obtener comentarios de un vídeo
     @GetMapping("/article/{articleId}")
     public ResponseEntity<List<CommentResponse>> getCommentsByArticle(@PathVariable Integer articleId) {
         List<CommentResponse> comments = commentService.getCommentsByArticle(articleId);
         return ResponseEntity.ok(comments);
     }
 
+    // ---- Obtener todos los comentarios
     @GetMapping
     public ResponseEntity<List<CommentResponse>> getAllComments() {
         List<CommentResponse> comments = commentService.getComments();
         return ResponseEntity.ok(comments);
     }
+
 }

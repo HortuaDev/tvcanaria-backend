@@ -4,9 +4,13 @@ import com.tvcanaria.dto.comment.CommentRequest;
 import com.tvcanaria.dto.comment.CommentResponse;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Comment;
+import com.tvcanaria.entity.CommentReport;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.entity.UserBlock;
 import com.tvcanaria.repository.ArticleRepository;
+import com.tvcanaria.repository.CommentReportRepository;
 import com.tvcanaria.repository.CommentRepository;
+import com.tvcanaria.repository.UserBlockRepository;
 import com.tvcanaria.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -25,21 +29,33 @@ public class CommentService {
     private CommentRepository commentRepository;
 
     @Autowired
+    private CommentReportRepository commentReportRepository;
+
+    @Autowired
     private ArticleRepository articleRepository;
 
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserBlockRepository userBlockRepository;
+
     @Transactional
     public CommentResponse createComment(CommentRequest commentRequest) {
-        // Obtener el usuario autenticado
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+        Integer userId = Integer.parseInt(authentication.getName());
 
-        User user = userRepository.findById(Integer.parseInt(userId))
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Buscar el artículo
+        // Verificar si el usuario está bloqueado
+        if (user.getUserBlock() != null) {
+            if (user.getUserBlock().getBlockedUntil().isAfter(LocalDateTime.now())) {
+                throw new RuntimeException("Usuario bloqueado hasta "
+                        + user.getUserBlock().getBlockedUntil());
+            }
+        }
+
         Article article = articleRepository.findById(commentRequest.getArticleId())
                 .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
 
@@ -57,7 +73,6 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByArticle(Integer articleId) {
-        // Verificar que el artículo existe
         articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
 
@@ -71,6 +86,92 @@ public class CommentService {
         return commentRepository.findAll().stream()
                 .map(this::mapToCommentResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void reportComment(Integer commentId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.parseInt(authentication.getName());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (commentReportRepository.existsByComment_CommentIdAndReporter_UserId(commentId, user.getUserId())) {
+            throw new RuntimeException("Ya has reportado este comentario");
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+
+        CommentReport report = new CommentReport();
+        report.setComment(comment);
+        report.setReporter(user);
+
+        commentReportRepository.save(report);
+
+        comment.setOffenseCount(comment.getOffenseCount() + 1);
+        commentRepository.save(comment);
+    }
+
+    @Transactional
+    public void deleteComment(Integer commentId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.parseInt(authentication.getName());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
+        boolean hasEnoughReports = comment.getOffenseCount() >= 5;
+
+        if (isAdmin || (hasEnoughReports && isReporter)) {
+            commentReportRepository.deleteByComment_CommentId(commentId);
+
+            commentRepository.delete(comment);
+            return;
+        }
+
+        throw new RuntimeException("No tienes permiso para eliminar este comentario");
+    }
+
+    @Transactional
+    public void confirmReport(Integer reportId) {
+        CommentReport report = commentReportRepository.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
+
+        report.setReviewed(true);
+        report.setValidReport(true);
+        commentReportRepository.save(report);
+
+        Comment comment = report.getComment();
+
+        if (comment.getOffenseCount() >= 5) {
+            User offender = comment.getUser();
+            int strikes = countUserStrikes(offender);
+
+            LocalDateTime blockUntil;
+            if (strikes >= 2) {
+                blockUntil = LocalDateTime.now().plusWeeks(1);
+            } else {
+                blockUntil = LocalDateTime.now().plusDays(1);
+            }
+
+            UserBlock block = new UserBlock();
+            block.setUser(offender);
+            block.setReason("Comentario inapropiado");
+            block.setBlockedUntil(blockUntil);
+
+            userBlockRepository.save(block);
+            commentRepository.delete(comment);
+        }
+    }
+
+    public int countUserStrikes(User user) {
+        return userBlockRepository.countByUser_UserId(user.getUserId());
     }
 
     private CommentResponse mapToCommentResponse(Comment comment) {
