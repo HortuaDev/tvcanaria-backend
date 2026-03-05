@@ -36,7 +36,7 @@ public class Article {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "rating", nullable = true)
+    @Column(name = "rating", nullable = true, precision = 3, scale = 1)
     private BigDecimal rating;
     
     @ManyToOne(optional = false)

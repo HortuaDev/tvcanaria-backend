@@ -30,6 +30,7 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
+
     @Transactional
     public CommentResponse createComment(CommentRequest commentRequest) {
         // Obtener el usuario autenticado
@@ -52,6 +53,11 @@ public class CommentService {
         comment.setUser(user);
 
         Comment savedComment = commentRepository.save(comment);
+
+
+        article.setRating(articleRepository.calculateAverageByArticleId(article.getArticleId()));
+        articleRepository.save(article);
+
         return mapToCommentResponse(savedComment);
     }
 
