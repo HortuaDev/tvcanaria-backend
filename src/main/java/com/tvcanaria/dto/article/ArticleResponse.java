@@ -1,6 +1,9 @@
 package com.tvcanaria.dto.article;
 
 import java.math.BigDecimal;
+import java.util.Set;
+
+import com.tvcanaria.entity.Category;
 
 public class ArticleResponse {
     private Integer id;
@@ -10,9 +13,10 @@ public class ArticleResponse {
     private String location;
     private String authorUsername;
     private BigDecimal rating;
+    private Set<Category> categories;
 
     public ArticleResponse(Integer id, String title, String description, String videoUrl, String location,
-            String authorUsername, BigDecimal rating) {
+            String authorUsername, BigDecimal rating, Set<Category> categories) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -20,6 +24,7 @@ public class ArticleResponse {
         this.location = location;
         this.authorUsername = authorUsername;
         this.rating = rating;
+        this.categories = categories;
     }
 
     // Getters y setters
@@ -77,6 +82,14 @@ public class ArticleResponse {
 
     public void setRating(BigDecimal rating) {
         this.rating = rating;
+    }
+
+    public Set<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<Category> categories) {
+        this.categories = categories;
     }
 
     
