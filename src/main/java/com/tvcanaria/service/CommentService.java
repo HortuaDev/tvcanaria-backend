@@ -125,12 +125,21 @@ public class CommentService {
                 .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
+
+        // Verificar si es el reportero autor del artículo
         boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
+
+        // Verificar si es moderador asignado al reportero del artículo
+        // El moderador tiene en su lista de "moderators" al reportero del artículo
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
+                .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
+
         boolean hasEnoughReports = comment.getOffenseCount() >= 5;
 
-        if (isAdmin || (hasEnoughReports && isReporter)) {
+        // Admin puede borrar siempre
+        // Reportero o moderador asignado pueden borrar si tiene >= 5 reportes
+        if (isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
             commentReportRepository.deleteByComment_CommentId(commentId);
-
             commentRepository.delete(comment);
             return;
         }
