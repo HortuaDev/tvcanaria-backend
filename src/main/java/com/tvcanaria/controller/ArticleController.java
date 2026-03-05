@@ -75,15 +75,15 @@ public class ArticleController {
         }
 
         if (Boolean.TRUE.equals(onlyVisible)) {
-            return ResponseEntity.ok(articleService.getVisibleArticles());
+            return ResponseEntity.ok(articleService.getVisibleArticleResponses());
         }
 
-        return ResponseEntity.ok(articleService.getAllArticles());
+        return ResponseEntity.ok(articleService.getAllArticleResponses());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Article> getArticleById(@PathVariable Integer id) {
-        return ResponseEntity.ok(articleService.getArticleById(id));
+    public ResponseEntity<ArticleResponse> getArticleById(@PathVariable Integer id) {
+        return ResponseEntity.ok(articleService.getArticleResponseById(id));
     }
 
     @GetMapping("/test")
