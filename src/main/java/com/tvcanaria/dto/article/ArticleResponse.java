@@ -1,74 +1,91 @@
 package com.tvcanaria.dto.article;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.tvcanaria.entity.Article;
 
 public class ArticleResponse {
-    private Integer id;
+
+    private Integer articleId;
     private String title;
     private String description;
     private String videoUrl;
+    private Boolean isHidden;
     private String location;
+    private LocalDateTime createdAt;
+
+    private Integer authorId;
     private String authorUsername;
     private BigDecimal rating;
 
-    public ArticleResponse(Integer id, String title, String description, String videoUrl, String location,
-            String authorUsername, BigDecimal rating) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.videoUrl = videoUrl;
-        this.location = location;
-        this.authorUsername = authorUsername;
-        this.rating = rating;
+    private Set<String> categories;
+
+    public ArticleResponse(Article article) {
+        this.articleId = article.getArticleId();
+        this.title = article.getTitle();
+        this.description = article.getDescription();
+        this.videoUrl = article.getVideoUrl();
+        this.isHidden = article.getIsHidden();
+        this.location = article.getLocation();
+        this.createdAt = article.getCreatedAt();
+
+        this.authorId = article.getAuthor().getUserId();
+        this.authorUsername = article.getAuthor().getUsername();
+
+        this.categories = article.getCategories()
+                .stream()
+                .map(category -> category.getName())
+                .collect(Collectors.toSet());
     }
 
-    // Getters y setters
-    public Integer getId() {
-        return id;
+    // Getters
+
+    public ArticleResponse(Integer articleId2, String title2, String description2, String videoUrl2, String location2,
+            String authentication) {
+        // TODO Auto-generated constructor stub
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public Integer getArticleId() {
+        return articleId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getVideoUrl() {
         return videoUrl;
     }
 
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
+    public Boolean getIsHidden() {
+        return isHidden;
     }
 
     public String getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Integer getAuthorId() {
+        return authorId;
     }
 
     public String getAuthorUsername() {
         return authorUsername;
     }
 
-    public void setAuthorUsername(String authorUsername) {
-        this.authorUsername = authorUsername;
+    public Set<String> getCategories() {
+        return categories;
     }
 
     public BigDecimal getRating() {
@@ -79,5 +96,4 @@ public class ArticleResponse {
         this.rating = rating;
     }
 
-    
 }
