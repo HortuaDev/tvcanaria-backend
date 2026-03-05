@@ -1,5 +1,7 @@
 package com.tvcanaria.dto.article;
 
+import java.math.BigDecimal;
+
 public class ArticleResponse {
     private Integer id;
     private String title;
@@ -7,15 +9,17 @@ public class ArticleResponse {
     private String videoUrl;
     private String location;
     private String authorUsername;
+    private BigDecimal rating;
 
     public ArticleResponse(Integer id, String title, String description, String videoUrl, String location,
-            String authorUsername) {
+            String authorUsername, BigDecimal rating) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.videoUrl = videoUrl;
         this.location = location;
         this.authorUsername = authorUsername;
+        this.rating = rating;
     }
 
     // Getters y setters
@@ -66,4 +70,14 @@ public class ArticleResponse {
     public void setAuthorUsername(String authorUsername) {
         this.authorUsername = authorUsername;
     }
+
+    public BigDecimal getRating() {
+        return rating;
+    }
+
+    public void setRating(BigDecimal rating) {
+        this.rating = rating;
+    }
+
+    
 }

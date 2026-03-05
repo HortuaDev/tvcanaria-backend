@@ -1,6 +1,8 @@
 package com.tvcanaria.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +36,9 @@ public class Article {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "rating", nullable = true)
+    private BigDecimal rating;
+    
     @ManyToOne(optional = false)
     @JoinColumn(name = "author_id", nullable = false)
     @JsonBackReference
@@ -45,6 +50,7 @@ public class Article {
     @ManyToMany
     @JoinTable(name = "article_category", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
+
 
     @PrePersist
     protected void onCreate() {
@@ -133,4 +139,13 @@ public class Article {
         this.categories = categories;
     }
 
+    public BigDecimal getRating() {
+        return rating;
+    }
+
+    public void setRating(BigDecimal rating) {
+        this.rating = rating;
+    }
+
+    
 }

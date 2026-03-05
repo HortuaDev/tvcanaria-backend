@@ -3,7 +3,6 @@ package com.tvcanaria.service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.tvcanaria.dto.*;
 import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.dto.auth.LoginRequest;
 import com.tvcanaria.dto.auth.RegisterRequest;

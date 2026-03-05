@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.tvcanaria.dto.*;
 import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.dto.auth.GoogleTokenRequest;
 import com.tvcanaria.dto.auth.LoginRequest;

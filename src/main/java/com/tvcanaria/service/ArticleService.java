@@ -97,11 +97,12 @@ public class ArticleService {
         article.setIsHidden(false);
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
+        article.setRating(null);
 
         articleRepository.save(article);
 
         return new ArticleResponse(article.getArticleId(), article.getTitle(), article.getDescription(),
-                article.getVideoUrl(), article.getLocation(), user.getUsername());
+                article.getVideoUrl(), article.getLocation(), user.getUsername(), article.getRating());
     }
 
     public List<Article> getAllArticles() {
