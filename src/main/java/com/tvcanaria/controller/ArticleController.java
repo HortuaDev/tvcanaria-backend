@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tvcanaria.dto.article.ArticleRequest;
 import com.tvcanaria.dto.article.ArticleResponse;
 import com.tvcanaria.dto.article.ArticleUpdateRequest;
-import com.tvcanaria.entity.Article;
 import com.tvcanaria.service.ArticleService;
 
 import jakarta.validation.Valid;
@@ -33,30 +32,22 @@ public class ArticleController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<ArticleResponse> uploadArticle(@Valid @RequestBody ArticleRequest articleRequest,
+    public ResponseEntity<ArticleResponse> uploadArticle(
+            @Valid @RequestBody ArticleRequest articleRequest,
             Authentication authentication) {
-        ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
 
-        if (article != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(article);
-        } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Article> updateArticle(@PathVariable Integer id,
+    public ResponseEntity<ArticleResponse> updateArticle(
+            @PathVariable Integer id,
             @Valid @RequestBody ArticleUpdateRequest request,
             Authentication authentication) {
 
-        Article updated = articleService.updateArticle(id, request, authentication);
-
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
-        } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
+        ArticleResponse updated = articleService.updateArticle(id, request, authentication);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
