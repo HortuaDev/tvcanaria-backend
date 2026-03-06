@@ -1,5 +1,7 @@
 package com.tvcanaria.dto.article;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -13,6 +15,8 @@ public class ArticleRequest {
     private String videoUrl;
 
     private String location;
+
+    private Set<Integer> categories;
 
     // Getters y setters
     public String getTitle() {
@@ -46,4 +50,13 @@ public class ArticleRequest {
     public void setLocation(String location) {
         this.location = location;
     }
+
+    public Set<Integer> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<Integer> categories) {
+        this.categories = categories;
+    }
+
 }

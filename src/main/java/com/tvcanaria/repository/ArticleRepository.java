@@ -17,6 +17,20 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
 
     List<Article> findByCategoriesCategoryId(Integer categoryId);
 
-    @Query(value = "SELECT COALESCE(ROUND(AVG(rating) * 2) / 2, 0) FROM comment WHERE article_id = :articleId", nativeQuery = true)
+    @Query(value = """
+            SELECT COALESCE(ROUND(AVG(ultimos_votos.rating) * 2) / 2, 0)
+            FROM (
+                SELECT rating
+                FROM comment c
+                WHERE c.article_id = :articleId
+                  AND c.rating >= 0.5
+                  AND c.created_at = (
+                      SELECT MAX(inner_c.created_at)
+                      FROM comment inner_c
+                      WHERE inner_c.user_id = c.user_id
+                        AND inner_c.article_id = :articleId
+                  )
+            ) AS ultimos_votos
+            """, nativeQuery = true)
     BigDecimal calculateAverageByArticleId(@Param("articleId") Integer articleId);
 }

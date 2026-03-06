@@ -1,6 +1,7 @@
 package com.tvcanaria.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -97,6 +98,10 @@ public class ArticleService {
 
     public ArticleResponse createArticle(ArticleRequest request, String authentication) {
 
+        if (authentication == null || authentication.isEmpty()) {
+            throw new RuntimeException("No se ha proporcionado un ID de usuario válido");
+        }
+
         User user = userRepository.findById(Integer.valueOf(authentication))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -106,13 +111,24 @@ public class ArticleService {
         article.setVideoUrl(request.getVideoUrl());
         article.setLocation(request.getLocation());
         article.setIsHidden(false);
+        article.setArticleId(user.getUserId());
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
         article.setRating(null);
 
+        if (request.getCategories() != null) {
+            Set<Category> categories = categoryService.getCategoriesByIds(request.getCategories());
+            article.setCategories(categories);
+        } else {
+            article.setCategories(new HashSet<>()); // Inicializar vacío si no hay nada
+        }
+
+
         articleRepository.save(article);
 
-        return new ArticleResponse(article);
+        return new ArticleResponse(article.getArticleId(), article.getTitle(), article.getDescription(),
+                article.getVideoUrl(), article.getLocation(), user.getUsername(), article.getRating(),
+                article.getCategories());
     }
 
     public List<Article> getAllArticles() {
@@ -136,6 +152,8 @@ public class ArticleService {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
+        
+        
         return new ArticleResponse(article);
     }
 
