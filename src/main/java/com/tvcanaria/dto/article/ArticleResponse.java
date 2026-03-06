@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
 
 public class ArticleResponse {
@@ -33,11 +34,21 @@ public class ArticleResponse {
         this.categories = categories;
     }
 
+    public ArticleResponse(Article article){
+        this.articleId = article.getArticleId();
+        this.title = article.getTitle();
+        this.description = article.getDescription();
+        this.videoUrl = article.getVideoUrl();
+        this.location = article.getLocation();
+        this.authorUsername = article.getAuthor().getUsername();
+        this.rating = article.getRating();
+        this.categories = article.getCategories();
+    }
+
     // Getters
 
     public ArticleResponse(Integer articleId2, String title2, String description2, String videoUrl2, String location2,
             String authentication) {
-        // TODO Auto-generated constructor stub
     }
 
     public Integer getArticleId() {
@@ -92,5 +103,4 @@ public class ArticleResponse {
         this.categories = categories;
     }
 
-    
 }
