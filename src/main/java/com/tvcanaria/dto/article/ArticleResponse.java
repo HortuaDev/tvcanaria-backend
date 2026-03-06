@@ -23,6 +23,7 @@ public class ArticleResponse {
 
     private Set<String> categories;
 
+    // Constructor que mapea un Article a ArticleResponse
     public ArticleResponse(Article article) {
         this.articleId = article.getArticleId();
         this.title = article.getTitle();
