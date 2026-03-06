@@ -34,19 +34,15 @@ public class ArticleResponse {
 
         this.authorId = article.getAuthor().getUserId();
         this.authorUsername = article.getAuthor().getUsername();
-
+        this.rating = article.getRating();
         this.categories = article.getCategories()
                 .stream()
                 .map(category -> category.getName())
                 .collect(Collectors.toSet());
+
     }
 
     // Getters
-
-    public ArticleResponse(Integer articleId2, String title2, String description2, String videoUrl2, String location2,
-            String authentication) {
-        // TODO Auto-generated constructor stub
-    }
 
     public Integer getArticleId() {
         return articleId;
