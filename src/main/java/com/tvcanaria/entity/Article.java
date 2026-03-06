@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -44,11 +45,13 @@ public class Article {
     @JsonIgnoreProperties({ "articles", "password" })
     private User author;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
     @ManyToMany
     @JoinTable(name = "article_category", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @JsonIgnoreProperties("articles")
     private Set<Category> categories = new HashSet<>();
 
     @PrePersist

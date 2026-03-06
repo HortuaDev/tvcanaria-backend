@@ -12,7 +12,7 @@ public class ArticleRequest {
 
     private String description;
 
-    private String video_url;
+    private String videoUrl;
 
     private String location;
 
@@ -35,12 +35,12 @@ public class ArticleRequest {
         this.description = description;
     }
 
-    public String getVideo_url() {
-        return video_url;
+    public String getVideoUrl() {
+        return videoUrl;
     }
 
-    public void setVideo_url(String video_url) {
-        this.video_url = video_url;
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
     }
 
     public String getLocation() {
