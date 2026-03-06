@@ -2,12 +2,10 @@ package com.tvcanaria.dto.article;
 
 import java.util.Set;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class ArticleUpdateRequest {
 
-    @NotBlank(message = "El título es obligatorio")
     @Size(max = 150, message = "El título no puede superar 150 caracteres")
     private String title;
 
