@@ -34,7 +34,12 @@ public class ArticleResponse {
         this.categories = categories;
     }
 
+<<<<<<< HEAD
     public ArticleResponse(Article article){
+=======
+    // Constructor que mapea un Article a ArticleResponse
+    public ArticleResponse(Article article) {
+>>>>>>> feature/articles
         this.articleId = article.getArticleId();
         this.title = article.getTitle();
         this.description = article.getDescription();
