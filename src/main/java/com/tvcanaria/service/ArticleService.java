@@ -55,27 +55,37 @@ public class ArticleService {
     }
 
     @Transactional
-    public Article updateArticle(Integer id, ArticleUpdateRequest request, Authentication auth) {
+    public ArticleResponse updateArticle(Integer id, ArticleUpdateRequest request, Authentication auth) {
+
         checkPermission(id, auth);
 
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (request.getTitle() != null)
+        if (request.getTitle() != null) {
             article.setTitle(request.getTitle());
-        if (request.getDescription() != null)
-            article.setDescription(request.getDescription());
-        if (request.getLocation() != null)
+        }
+
+        if (request.getLocation() != null) {
             article.setLocation(request.getLocation());
-        if (request.getIsHidden() != null)
+        }
+
+        if (request.getDescription() != null) {
+            article.setDescription(request.getDescription());
+        }
+
+        if (request.getIsHidden() != null) {
             article.setIsHidden(request.getIsHidden());
+        }
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
             article.setCategories(categories); // JPA actualizará la tabla intermedia
         }
 
-        return articleRepository.save(article); // esto actualiza todo
+        articleRepository.save(article);
+
+        return new ArticleResponse(article);
     }
 
     public void deleteArticle(Integer id, Authentication auth) {
@@ -93,7 +103,7 @@ public class ArticleService {
         Article article = new Article();
         article.setTitle(request.getTitle());
         article.setDescription(request.getDescription());
-        article.setVideoUrl(request.getVideo_url());
+        article.setVideoUrl(request.getVideoUrl());
         article.setLocation(request.getLocation());
         article.setIsHidden(false);
         article.setCreatedAt(LocalDateTime.now());
