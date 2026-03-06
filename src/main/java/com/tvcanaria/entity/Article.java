@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "article")
@@ -38,10 +38,10 @@ public class Article {
 
     @Column(name = "rating", nullable = true, precision = 3, scale = 1)
     private BigDecimal rating;
-    
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "author_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties({ "articles", "password" })
     private User author;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -50,7 +50,6 @@ public class Article {
     @ManyToMany
     @JoinTable(name = "article_category", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
-
 
     @PrePersist
     protected void onCreate() {
@@ -147,5 +146,4 @@ public class Article {
         this.rating = rating;
     }
 
-    
 }

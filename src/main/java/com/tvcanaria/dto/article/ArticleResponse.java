@@ -1,23 +1,29 @@
 package com.tvcanaria.dto.article;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import com.tvcanaria.entity.Category;
 
 public class ArticleResponse {
-    private Integer id;
+
+    private Integer articleId;
     private String title;
     private String description;
     private String videoUrl;
+    private Boolean isHidden;
     private String location;
+    private LocalDateTime createdAt;
+
+    private Integer authorId;
     private String authorUsername;
     private BigDecimal rating;
     private Set<Category> categories;
 
     public ArticleResponse(Integer id, String title, String description, String videoUrl, String location,
             String authorUsername, BigDecimal rating, Set<Category> categories) {
-        this.id = id;
+        this.articleId = id;
         this.title = title;
         this.description = description;
         this.videoUrl = videoUrl;
@@ -27,53 +33,47 @@ public class ArticleResponse {
         this.categories = categories;
     }
 
-    // Getters y setters
-    public Integer getId() {
-        return id;
+    // Getters
+
+    public ArticleResponse(Integer articleId2, String title2, String description2, String videoUrl2, String location2,
+            String authentication) {
+        // TODO Auto-generated constructor stub
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public Integer getArticleId() {
+        return articleId;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getVideoUrl() {
         return videoUrl;
     }
 
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
+    public Boolean getIsHidden() {
+        return isHidden;
     }
 
     public String getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Integer getAuthorId() {
+        return authorId;
     }
 
     public String getAuthorUsername() {
         return authorUsername;
-    }
-
-    public void setAuthorUsername(String authorUsername) {
-        this.authorUsername = authorUsername;
     }
 
     public BigDecimal getRating() {
