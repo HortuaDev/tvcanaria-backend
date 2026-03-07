@@ -28,7 +28,7 @@ public class Article {
     @Column(name = "video_url", length = 255)
     private String videoUrl;
 
-    @Column(name = "is_hidden", nullable = false)
+    @Column(nullable = false)
     private Boolean isHidden = false;
 
     @Column(name = "location", length = 100)

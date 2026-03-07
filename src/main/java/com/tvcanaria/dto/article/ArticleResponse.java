@@ -44,7 +44,7 @@ public class ArticleResponse {
         this.authorUsername = article.getAuthor().getUsername();
         this.rating = article.getRating();
         this.categories = article.getCategories();
-
+        this.isHidden = article.getIsHidden() != null ? article.getIsHidden() : false;
     }
 
     // Getters
