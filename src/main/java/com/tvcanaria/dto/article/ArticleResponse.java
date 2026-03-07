@@ -34,12 +34,8 @@ public class ArticleResponse {
         this.categories = categories;
     }
 
-<<<<<<< HEAD
-    public ArticleResponse(Article article){
-=======
     // Constructor que mapea un Article a ArticleResponse
     public ArticleResponse(Article article) {
->>>>>>> feature/articles
         this.articleId = article.getArticleId();
         this.title = article.getTitle();
         this.description = article.getDescription();
@@ -47,14 +43,15 @@ public class ArticleResponse {
         this.location = article.getLocation();
         this.authorUsername = article.getAuthor().getUsername();
         this.rating = article.getRating();
-        this.categories = article.getCategories()
-                .stream()
-                .map(category -> category.getName())
-                .collect(Collectors.toSet());
+        this.categories = article.getCategories();
 
     }
 
     // Getters
+
+    public ArticleResponse(Integer articleId2, String title2, String description2, String videoUrl2, String location2,
+            String authentication) {
+    }
 
     public Integer getArticleId() {
         return articleId;
