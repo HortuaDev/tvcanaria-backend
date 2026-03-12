@@ -1,5 +1,7 @@
 package com.tvcanaria.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.tvcanaria.dto.article.ArticleRequest;
 import com.tvcanaria.dto.article.ArticleResponse;
@@ -31,12 +34,24 @@ public class ArticleController {
         this.articleService = articleService;
     }
 
-    @PostMapping("/upload")
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
     public ResponseEntity<ArticleResponse> uploadArticle(
-            @Valid @RequestBody ArticleRequest articleRequest,
-            Authentication authentication) {
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("location") String location,
+            @RequestParam("categories") List<Integer> categories,
+            @RequestParam("video") MultipartFile video,
+            Authentication authentication) throws Exception {
 
-        ArticleResponse article = articleService.createArticle(articleRequest, authentication.getName());
+        ArticleResponse article = articleService.createArticleWithVideo(
+                title,
+                description,
+                location,
+                categories,
+                video,
+                authentication.getName()
+        );
+
         return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }
 

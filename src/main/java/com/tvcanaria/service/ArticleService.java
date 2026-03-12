@@ -3,13 +3,14 @@ package com.tvcanaria.service;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 
-import com.tvcanaria.dto.article.ArticleRequest;
 import com.tvcanaria.dto.article.ArticleResponse;
 import com.tvcanaria.dto.article.ArticleUpdateRequest;
 import com.tvcanaria.entity.Article;
@@ -25,12 +26,14 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
     private final CategoryService categoryService;
+    private final CloudinaryService cloudinaryService;
 
     public ArticleService(ArticleRepository articleRepository, CategoryService categoryService,
-            UserRepository userRepository) {
+            UserRepository userRepository, CloudinaryService cloudinaryService) {
         this.articleRepository = articleRepository;
         this.categoryService = categoryService;
         this.userRepository = userRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public boolean isAuthor(Integer articleId, String username) {
@@ -96,39 +99,38 @@ public class ArticleService {
 
     }
 
-    public ArticleResponse createArticle(ArticleRequest request, String authentication) {
-
-        if (authentication == null || authentication.isEmpty()) {
-            throw new RuntimeException("No se ha proporcionado un ID de usuario válido");
-        }
+    public ArticleResponse createArticleWithVideo(
+            String title,
+            String description,
+            String location,
+            List<Integer> categoryIds,
+            MultipartFile video,
+            String authentication) throws Exception {
 
         User user = userRepository.findById(Integer.valueOf(authentication))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        Map<String, Object> uploadResult = cloudinaryService.uploadVideo(video);
+
+        String videoUrl = (String) uploadResult.get("secure_url");
+
         Article article = new Article();
-        article.setTitle(request.getTitle());
-        article.setDescription(request.getDescription());
-        article.setVideoUrl(request.getVideoUrl());
-        article.setLocation(request.getLocation());
+        article.setTitle(title);
+        article.setDescription(description);
+        article.setLocation(location);
+        article.setVideoUrl(videoUrl);
         article.setIsHidden(false);
-        article.setArticleId(user.getUserId());
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
-        article.setRating(null);
 
-        if (request.getCategories() != null) {
-            Set<Category> categories = categoryService.getCategoriesByIds(request.getCategories());
+        if (categoryIds != null) {
+            Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(categoryIds));
             article.setCategories(categories);
-        } else {
-            article.setCategories(new HashSet<>()); // Inicializar vacío si no hay nada
         }
-
 
         articleRepository.save(article);
 
-        return new ArticleResponse(article.getArticleId(), article.getTitle(), article.getDescription(),
-                article.getVideoUrl(), article.getLocation(), user.getUsername(), article.getRating(),
-                article.getCategories());
+        return new ArticleResponse(article);
     }
 
     public List<Article> getAllArticles() {
