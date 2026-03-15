@@ -1,12 +1,11 @@
 package com.tvcanaria.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,11 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.tvcanaria.dto.article.ArticleRequest;
 import com.tvcanaria.dto.article.ArticleResponse;
 import com.tvcanaria.dto.article.ArticleUpdateRequest;
+import com.tvcanaria.dto.article.ArticleUploadRequest;
 import com.tvcanaria.service.ArticleService;
 
 import jakarta.validation.Valid;
@@ -36,21 +34,10 @@ public class ArticleController {
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
     public ResponseEntity<ArticleResponse> uploadArticle(
-            @RequestParam("title") String title,
-            @RequestParam("description") String description,
-            @RequestParam("location") String location,
-            @RequestParam("categories") List<Integer> categories,
-            @RequestParam("video") MultipartFile video,
+            @Valid @ModelAttribute ArticleUploadRequest request,
             Authentication authentication) throws Exception {
 
-        ArticleResponse article = articleService.createArticleWithVideo(
-                title,
-                description,
-                location,
-                categories,
-                video,
-                authentication.getName()
-        );
+        ArticleResponse article = articleService.createArticleWithVideo(request, authentication.getName());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }

@@ -8,11 +8,11 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 
 import com.tvcanaria.dto.article.ArticleResponse;
 import com.tvcanaria.dto.article.ArticleUpdateRequest;
+import com.tvcanaria.dto.article.ArticleUploadRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
@@ -99,32 +99,27 @@ public class ArticleService {
 
     }
 
-    public ArticleResponse createArticleWithVideo(
-            String title,
-            String description,
-            String location,
-            List<Integer> categoryIds,
-            MultipartFile video,
-            String authentication) throws Exception {
+    public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, String authentication)
+            throws Exception {
 
         User user = userRepository.findById(Integer.valueOf(authentication))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Map<String, Object> uploadResult = cloudinaryService.uploadVideo(video);
+        Map<String, Object> uploadResult = cloudinaryService.uploadVideo(request.getVideo());
 
         String videoUrl = (String) uploadResult.get("secure_url");
 
         Article article = new Article();
-        article.setTitle(title);
-        article.setDescription(description);
-        article.setLocation(location);
+        article.setTitle(request.getTitle());
+        article.setDescription(request.getDescription());
+        article.setLocation(request.getLocation());
         article.setVideoUrl(videoUrl);
         article.setIsHidden(false);
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
 
-        if (categoryIds != null) {
-            Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(categoryIds));
+        if (request.getCategories() != null) {
+            Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
             article.setCategories(categories);
         }
 
