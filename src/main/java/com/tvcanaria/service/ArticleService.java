@@ -105,6 +105,10 @@ public class ArticleService {
         User user = userRepository.findById(Integer.valueOf(authentication))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
+            throw new RuntimeException("No permission to post new articles");
+        }
+
         Map<String, Object> uploadResult = cloudinaryService.uploadVideo(request.getVideo());
 
         String videoUrl = (String) uploadResult.get("secure_url");
@@ -149,8 +153,6 @@ public class ArticleService {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        
-        
         return new ArticleResponse(article);
     }
 
