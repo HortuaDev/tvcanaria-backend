@@ -1,7 +1,10 @@
 package com.tvcanaria.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -87,5 +90,34 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error testing endpoint: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/my-articles")
+    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
+    public ResponseEntity<List<ArticleResponse>> getMyArticles(Authentication authentication) {
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        List<ArticleResponse> articles;
+
+        if (isAdmin) {
+            articles = articleService.getAllArticles()
+                    .stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .map(ArticleResponse::new)
+                    .toList();
+        } else {
+            // Tomar el id del usuario autenticado directamente
+            Integer userId = Integer.valueOf(authentication.getName()); // asumiendo que el token guarda userId en name
+            articles = articleService.getArticlesByUserId(userId)
+                    .stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .map(ArticleResponse::new)
+                    .toList();
+        }
+
+        return ResponseEntity.ok(articles);
     }
 }
