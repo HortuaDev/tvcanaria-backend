@@ -33,4 +33,6 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
             ) AS ultimos_votos
             """, nativeQuery = true)
     BigDecimal calculateAverageByArticleId(@Param("articleId") Integer articleId);
+
+    List<Article> findByAuthorUserId(Integer userId);
 }
