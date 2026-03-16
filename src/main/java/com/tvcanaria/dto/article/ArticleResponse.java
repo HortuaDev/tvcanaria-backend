@@ -34,6 +34,19 @@ public class ArticleResponse {
         this.categories = categories;
     }
 
+    public ArticleResponse(Integer id, String title, String description, String videoUrl, String location,
+            String authorUsername, BigDecimal rating, Set<Category> categories, Integer authorId) {
+        this.articleId = id;
+        this.title = title;
+        this.description = description;
+        this.videoUrl = videoUrl;
+        this.location = location;
+        this.authorUsername = authorUsername;
+        this.rating = rating;
+        this.categories = categories;
+        this.authorId = authorId;
+    }
+
     // Constructor que mapea un Article a ArticleResponse
     public ArticleResponse(Article article) {
         this.articleId = article.getArticleId();
@@ -45,6 +58,8 @@ public class ArticleResponse {
         this.rating = article.getRating();
         this.categories = article.getCategories();
         this.isHidden = article.getIsHidden() != null ? article.getIsHidden() : false;
+        this.createdAt = article.getCreatedAt();
+        this.authorId = article.getAuthor().getUserId();
     }
 
     // Getters
