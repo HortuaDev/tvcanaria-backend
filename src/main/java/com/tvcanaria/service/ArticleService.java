@@ -119,6 +119,7 @@ public class ArticleService {
         article.setLocation(request.getLocation());
         article.setVideoUrl(videoUrl);
         article.setIsHidden(false);
+        // article.setArticleId(user.getUserId());
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
 
@@ -170,4 +171,7 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
+    public List<Article> getArticlesByUserId(Integer userId) {
+        return articleRepository.findByAuthorUserId(userId);
+    }
 }
