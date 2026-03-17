@@ -63,6 +63,28 @@ public class ArticleService {
     }
 
     @Transactional
+    public ArticleResponse changeVisibility(Integer id, Boolean hidden, Authentication auth) {
+
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        User user = userRepository.findById(Integer.valueOf(auth.getName()))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
+
+        if (!isAdmin && !isAuthor) {
+            throw new RuntimeException("No tiene permisos para cambiar visibilidad");
+        }
+
+        article.setIsHidden(hidden);
+        articleRepository.save(article);
+
+        return new ArticleResponse(article);
+    }
+
+    @Transactional
     public ArticleResponse updateArticle(Integer id, ArticleUpdateRequest request, Authentication auth) {
 
         checkPermission(id, auth);
