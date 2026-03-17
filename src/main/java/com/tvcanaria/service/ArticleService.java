@@ -42,17 +42,21 @@ public class ArticleService {
         return article.getAuthor().getUsername().equals(username);
     }
 
-    private void checkPermission(Integer articleId, Authentication auth) { // solo ADMIN o autor
+    private void checkPermission(Integer articleId, Authentication auth) {
+
         User user = userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() == User.Role.ADMIN)
-            return;
 
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (article.getAuthor().getUsername().equals(user.getUsername()))
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
+
+        if (isAdmin)
+            return;
+
+        if (user.getRole() == User.Role.REPORTER && isAuthor)
             return;
 
         throw new RuntimeException("No tiene permisos para esta acción");
