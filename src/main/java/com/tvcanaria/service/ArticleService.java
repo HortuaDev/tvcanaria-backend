@@ -158,38 +158,26 @@ public class ArticleService {
         return new ArticleResponse(article);
     }
 
-    public List<Article> getAllArticles() {
-        return articleRepository.findAll();
-    }
-
-    public List<Article> getVisibleArticles() {
-        return articleRepository.findByIsHiddenFalse();
-    }
-
-    public Article getArticleById(Integer id) {
-        return articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
-    }
 
     public List<Article> getArticlesByCategory(Integer categoryId) {
         return articleRepository.findByCategoriesCategoryId(categoryId);
     }
 
-    public ArticleResponse getArticleResponseById(Integer id) {
+    public ArticleResponse getArticleById(Integer id) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
         return new ArticleResponse(article);
     }
 
-    public List<ArticleResponse> getAllArticleResponses() {
+    public List<ArticleResponse> getAllArticles() {
         return articleRepository.findAll()
                 .stream()
                 .map(ArticleResponse::new)
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleResponse> getVisibleArticleResponses() {
+    public List<ArticleResponse> getVisibleArticle() {
         return articleRepository.findByIsHiddenFalse()
                 .stream()
                 .map(ArticleResponse::new)
