@@ -55,6 +55,17 @@ public class ArticleController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/{id}/visibility")
+    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
+    public ResponseEntity<ArticleResponse> changeVisibility(
+            @PathVariable Integer id,
+            @RequestParam Boolean hidden,
+            Authentication authentication) {
+
+        ArticleResponse updated = articleService.changeVisibility(id, hidden, authentication);
+        return ResponseEntity.ok(updated);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArticle(@PathVariable Integer id, Authentication authentication) {
         articleService.deleteArticle(id, authentication);
@@ -71,53 +82,21 @@ public class ArticleController {
         }
 
         if (Boolean.TRUE.equals(onlyVisible)) {
-            return ResponseEntity.ok(articleService.getVisibleArticleResponses());
+            return ResponseEntity.ok(articleService.getVisibleArticle());
         }
 
-        return ResponseEntity.ok(articleService.getAllArticleResponses());
+        return ResponseEntity.ok(articleService.getAllArticles());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ArticleResponse> getArticleById(@PathVariable Integer id) {
-        return ResponseEntity.ok(articleService.getArticleResponseById(id));
-    }
-
-    @GetMapping("/test")
-    public ResponseEntity<String> testEndpoint() {
-        try {
-            return ResponseEntity.ok("Endpoint is working!");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error testing endpoint: " + e.getMessage());
-        }
+        return ResponseEntity.ok(articleService.getArticleById(id));
     }
 
     @GetMapping("/my-articles")
     @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
     public ResponseEntity<List<ArticleResponse>> getMyArticles(Authentication authentication) {
-
-        boolean isAdmin = authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        List<ArticleResponse> articles;
-
-        if (isAdmin) {
-            articles = articleService.getAllArticles()
-                    .stream()
-                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                    .map(ArticleResponse::new)
-                    .toList();
-        } else {
-            // Tomar el id del usuario autenticado directamente
-            Integer userId = Integer.valueOf(authentication.getName()); // asumiendo que el token guarda userId en name
-            articles = articleService.getArticlesByUserId(userId)
-                    .stream()
-                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                    .map(ArticleResponse::new)
-                    .toList();
-        }
-
+        List<ArticleResponse> articles = articleService.getMyArticles(authentication);
         return ResponseEntity.ok(articles);
     }
 }

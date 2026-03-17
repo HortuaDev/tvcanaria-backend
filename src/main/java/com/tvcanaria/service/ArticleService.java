@@ -42,20 +42,46 @@ public class ArticleService {
         return article.getAuthor().getUsername().equals(username);
     }
 
-    private void checkPermission(Integer articleId, Authentication auth) { // solo ADMIN o autor
+    private void checkPermission(Integer articleId, Authentication auth) {
+
         User user = userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() == User.Role.ADMIN)
-            return;
 
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (article.getAuthor().getUsername().equals(user.getUsername()))
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
+
+        if (isAdmin)
+            return;
+
+        if (user.getRole() == User.Role.REPORTER && isAuthor)
             return;
 
         throw new RuntimeException("No tiene permisos para esta acción");
+    }
+
+    @Transactional
+    public ArticleResponse changeVisibility(Integer id, Boolean hidden, Authentication auth) {
+
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        User user = userRepository.findById(Integer.valueOf(auth.getName()))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
+
+        if (!isAdmin && !isAuthor) {
+            throw new RuntimeException("No tiene permisos para cambiar visibilidad");
+        }
+
+        article.setIsHidden(hidden);
+        articleRepository.save(article);
+
+        return new ArticleResponse(article);
     }
 
     @Transactional
@@ -133,38 +159,45 @@ public class ArticleService {
         return new ArticleResponse(article);
     }
 
-    public List<Article> getAllArticles() {
-        return articleRepository.findAll();
-    }
+    public List<ArticleResponse> getMyArticles(Authentication auth) {
 
-    public List<Article> getVisibleArticles() {
-        return articleRepository.findByIsHiddenFalse();
-    }
+        User user = userRepository.findById(Integer.valueOf(auth.getName()))
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    public Article getArticleById(Integer id) {
-        return articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+        if (user.getRole() == User.Role.ADMIN) {
+            return articleRepository.findAll()
+                    .stream()
+                    .map(ArticleResponse::new)
+                    .collect(Collectors.toList());
+        } else if (user.getRole() == User.Role.REPORTER) {
+            return articleRepository.findByAuthorUserId(user.getUserId())
+                    .stream()
+                    .map(ArticleResponse::new)
+                    .collect(Collectors.toList());
+        } else {
+            throw new RuntimeException("No permission over any articles");
+        }
     }
 
     public List<Article> getArticlesByCategory(Integer categoryId) {
         return articleRepository.findByCategoriesCategoryId(categoryId);
     }
 
-    public ArticleResponse getArticleResponseById(Integer id) {
+    public ArticleResponse getArticleById(Integer id) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
         return new ArticleResponse(article);
     }
 
-    public List<ArticleResponse> getAllArticleResponses() {
+    public List<ArticleResponse> getAllArticles() {
         return articleRepository.findAll()
                 .stream()
                 .map(ArticleResponse::new)
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleResponse> getVisibleArticleResponses() {
+    public List<ArticleResponse> getVisibleArticle() {
         return articleRepository.findByIsHiddenFalse()
                 .stream()
                 .map(ArticleResponse::new)

@@ -44,6 +44,10 @@ public class SecurityConfig {
                         .requestMatchers("/articles/test").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/articles/upload")
                         .hasAnyAuthority("ADMIN", "REPORTER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/articles/{id}")
+                        .hasAnyAuthority("ADMIN", "REPORTER")
+                        .requestMatchers(HttpMethod.PUT, "/api/articles/{id}")
+                        .hasAnyAuthority("ADMIN", "REPORTER")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated())
 
