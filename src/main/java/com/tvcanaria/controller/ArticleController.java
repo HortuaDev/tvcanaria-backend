@@ -2,6 +2,7 @@ package com.tvcanaria.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,17 @@ public class ArticleController {
             Authentication authentication) {
 
         ArticleResponse updated = articleService.updateArticle(id, request, authentication);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/{id}/visibility")
+    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
+    public ResponseEntity<ArticleResponse> changeVisibility(
+            @PathVariable Integer id,
+            @RequestParam Boolean hidden,
+            Authentication authentication) {
+
+        ArticleResponse updated = articleService.changeVisibility(id, hidden, authentication);
         return ResponseEntity.ok(updated);
     }
 
