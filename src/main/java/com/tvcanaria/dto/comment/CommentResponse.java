@@ -12,6 +12,7 @@ public class CommentResponse {
     private BigDecimal rating;
     private String username;
     private Integer authorId;
+    private Integer articleId;
 
     public Integer getCommentId() {
         return commentId;
@@ -67,5 +68,13 @@ public class CommentResponse {
 
     public void setAuthorId(Integer authorId) {
         this.authorId = authorId;
+    }
+    
+    public Integer getArticleId() {
+        return articleId;
+    }
+
+    public void setArticleId(Integer articleId) {
+        this.articleId = articleId;
     }
 }
