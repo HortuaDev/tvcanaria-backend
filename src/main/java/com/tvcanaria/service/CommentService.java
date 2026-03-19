@@ -96,7 +96,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentResponse> getReportedComments() {
-        return commentRepository.findByOffenseCountGreaterThanEqual(5)
+        return commentRepository.findByOffenseCountGreaterThanEqual(1)
                 .stream()
                 .map(this::mapToCommentResponse)
                 .toList();
