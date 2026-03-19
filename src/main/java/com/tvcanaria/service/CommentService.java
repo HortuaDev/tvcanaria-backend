@@ -40,6 +40,7 @@ public class CommentService {
     @Autowired
     private UserBlockRepository userBlockRepository;
 
+    // ---- Crear comentario
     @Transactional
     public CommentResponse createComment(CommentRequest commentRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -49,11 +50,10 @@ public class CommentService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Verificar si el usuario está bloqueado
-        if (user.getUserBlock() != null) {
-            if (user.getUserBlock().getBlockedUntil().isAfter(LocalDateTime.now())) {
-                throw new RuntimeException("Usuario bloqueado hasta "
-                        + user.getUserBlock().getBlockedUntil());
-            }
+        if (user.getUserBlock() != null &&
+                user.getUserBlock().getBlockedUntil().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Usuario bloqueado hasta "
+                    + user.getUserBlock().getBlockedUntil());
         }
 
         Article article = articleRepository.findById(commentRequest.getArticleId())
@@ -80,16 +80,26 @@ public class CommentService {
         articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Artículo no encontrado"));
 
-        return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId).stream()
+        return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId)
+                .stream()
                 .map(this::mapToCommentResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<CommentResponse> getComments() {
-        return commentRepository.findAll().stream()
+        return commentRepository.findAll()
+                .stream()
                 .map(this::mapToCommentResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getReportedComments() {
+        return commentRepository.findByOffenseCountGreaterThanEqual(5)
+                .stream()
+                .map(this::mapToCommentResponse)
+                .toList();
     }
 
     @Transactional
@@ -110,6 +120,8 @@ public class CommentService {
         CommentReport report = new CommentReport();
         report.setComment(comment);
         report.setReporter(user);
+        report.setReviewed(false);
+        report.setValidReport(false);
 
         commentReportRepository.save(report);
 
@@ -130,18 +142,13 @@ public class CommentService {
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
 
-        // Verificar si es el reportero autor del artículo
         boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
 
-        // Verificar si es moderador asignado al reportero del artículo
-        // El moderador tiene en su lista de "moderators" al reportero del artículo
         boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
                 .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
 
         boolean hasEnoughReports = comment.getOffenseCount() >= 5;
 
-        // Admin puede borrar siempre
-        // Reportero o moderador asignado pueden borrar si tiene >= 5 reportes
         if (isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
             commentReportRepository.deleteByComment_CommentId(commentId);
             commentRepository.delete(comment);
@@ -151,36 +158,99 @@ public class CommentService {
         throw new RuntimeException("No tienes permiso para eliminar este comentario");
     }
 
+    // --- Confirmar reportes (moderador decide castigar)
     @Transactional
-    public void confirmReport(Integer reportId) {
-        CommentReport report = commentReportRepository.findById(reportId)
-                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
+    public void confirmReports(Integer commentId) {
 
-        report.setReviewed(true);
-        report.setValidReport(true);
-        commentReportRepository.save(report);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.parseInt(authentication.getName());
 
-        Comment comment = report.getComment();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (comment.getOffenseCount() >= 5) {
-            User offender = comment.getUser();
-            int strikes = countUserStrikes(offender);
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
 
-            LocalDateTime blockUntil;
-            if (strikes >= 2) {
-                blockUntil = LocalDateTime.now().plusWeeks(1);
-            } else {
-                blockUntil = LocalDateTime.now().plusDays(1);
-            }
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
 
-            UserBlock block = new UserBlock();
-            block.setUser(offender);
-            block.setReason("Comentario inapropiado");
-            block.setBlockedUntil(blockUntil);
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
+                .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
 
-            userBlockRepository.save(block);
-            commentRepository.delete(comment);
+        if (!isAdmin && !isAssignedModerator) {
+            throw new RuntimeException("No tienes permisos para moderar este comentario");
         }
+
+        if (comment.getOffenseCount() < 5) {
+            throw new RuntimeException("El comentario no tiene suficientes reportes");
+        }
+
+        List<CommentReport> reports = commentReportRepository
+                .findByComment_CommentId(commentId);
+
+        for (CommentReport report : reports) {
+            report.setReviewed(true);
+            report.setValidReport(true);
+        }
+
+        commentReportRepository.saveAll(reports);
+
+        User offender = comment.getUser();
+
+        int strikes = countUserStrikes(offender);
+
+        LocalDateTime blockUntil;
+
+        if (strikes >= 2) {
+            blockUntil = LocalDateTime.now().plusWeeks(1);
+        } else {
+            blockUntil = LocalDateTime.now().plusDays(1);
+        }
+
+        UserBlock block = new UserBlock();
+        block.setUser(offender);
+        block.setReason("Comentario inapropiado");
+        block.setBlockedUntil(blockUntil);
+
+        userBlockRepository.save(block);
+
+        commentReportRepository.deleteByComment_CommentId(commentId);
+        commentRepository.delete(comment);
+    }
+
+    // ---- Rechazar reportes a un comentario
+    @Transactional
+    public void rejectReports(Integer commentId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.parseInt(authentication.getName());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
+                .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
+
+        if (!isAdmin && !isAssignedModerator) {
+            throw new RuntimeException("No tienes permisos para moderar este comentario");
+        }
+
+        List<CommentReport> reports = commentReportRepository
+                .findByComment_CommentId(commentId);
+
+        for (CommentReport report : reports) {
+            report.setReviewed(true);
+            report.setValidReport(false);
+        }
+
+        commentReportRepository.saveAll(reports);
+
+        comment.setOffenseCount(0);
+        commentRepository.save(comment);
     }
 
     public int countUserStrikes(User user) {

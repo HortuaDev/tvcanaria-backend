@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,6 +52,29 @@ public class CommentController {
     public ResponseEntity<List<CommentResponse>> getAllComments() {
         List<CommentResponse> comments = commentService.getComments();
         return ResponseEntity.ok(comments);
+    }
+    
+    // ---- Obtener los comentarios reportados
+    @GetMapping
+    public ResponseEntity<List<CommentResponse>> getReportedComments() {
+        List<CommentResponse> comments = commentService.getReportedComments();
+        return ResponseEntity.ok(comments);
+    }
+    
+    // ---- Aprobar comentario (rechazar reportes)
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PutMapping("/{commentId}/approve")
+    public ResponseEntity<String> approveComment(@PathVariable Integer commentId) {
+        commentService.rejectReports(commentId);
+        return ResponseEntity.ok("Comentario aprobado y reportes rechazados");
+    }
+
+    // ---- Desaprobar comentario (confirmar reportes)
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PutMapping("/{commentId}/reject")
+    public ResponseEntity<String> rejectComment(@PathVariable Integer commentId) {
+        commentService.confirmReports(commentId);
+        return ResponseEntity.ok("Comentario marcado como inapropiado");
     }
 
 }

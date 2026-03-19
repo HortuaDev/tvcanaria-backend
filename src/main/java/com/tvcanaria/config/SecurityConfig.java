@@ -38,10 +38,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Autorización de peticiones
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/articles/test").hasAuthority("ADMIN")
+                        // Permisos para manejar artículos
                         .requestMatchers(HttpMethod.POST, "/api/articles/upload")
                         .hasAnyAuthority("ADMIN", "REPORTER")
                         .requestMatchers(HttpMethod.DELETE, "/api/articles/{id}")

@@ -15,4 +15,6 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, In
     List<CommentReportRepository> findByReviewedFalse();
 
     void deleteByComment_CommentId(Integer commentId);
+    
+    List<CommentReport> findByComment_CommentId(Integer commentId);
 }
