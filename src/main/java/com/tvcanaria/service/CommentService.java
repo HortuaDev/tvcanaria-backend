@@ -265,6 +265,7 @@ public class CommentService {
         response.setOffenseCount(comment.getOffenseCount());
         response.setRating(comment.getRating());
         response.setUsername(comment.getUser() != null ? comment.getUser().getUsername() : null);
+        response.setAuthorId(comment.getUser() != null ? comment.getUser().getUserId() : null);
         return response;
     }
 }
