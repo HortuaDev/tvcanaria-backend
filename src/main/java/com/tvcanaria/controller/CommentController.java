@@ -55,7 +55,7 @@ public class CommentController {
     }
     
     // ---- Obtener los comentarios reportados
-    @GetMapping
+    @GetMapping("/reported")
     public ResponseEntity<List<CommentResponse>> getReportedComments() {
         List<CommentResponse> comments = commentService.getReportedComments();
         return ResponseEntity.ok(comments);
