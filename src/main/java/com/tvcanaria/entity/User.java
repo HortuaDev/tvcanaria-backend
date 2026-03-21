@@ -19,10 +19,10 @@ public class User {
     private Integer userId;
 
     @Column(name = "auth_provider", length = 20)
-    private String authProvider; // "LOCAL" o "GOOGLE"
+    private String authProvider;
 
     @Column(name = "provider_id", length = 100)
-    private String providerId; // ID del proveedor OAuth
+    private String providerId;
 
     @Column(name = "username", nullable = false, unique = true, length = 25)
     private String username;
@@ -64,12 +64,8 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserBlock userBlock;
 
-    @ManyToMany
-    @JoinTable(name = "moderator_reporter", joinColumns = @JoinColumn(name = "moderator_id"), inverseJoinColumns = @JoinColumn(name = "reporter_id"))
-    private Set<User> assignedReporters = new HashSet<>();
-
-    @ManyToMany(mappedBy = "assignedReporters")
-    private Set<User> moderators = new HashSet<>();
+    @OneToMany(mappedBy = "reporter")
+    private Set<ModeratorReporter> moderatorRelations = new HashSet<>();
 
     public enum Role {
         READER, REPORTER, MODERATOR, ADMIN
@@ -77,15 +73,12 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
+        if (createdAt == null)
             createdAt = LocalDateTime.now();
-        }
-        if (role == null) {
+        if (role == null)
             role = Role.READER;
-        }
-        if (isActive == null) {
+        if (isActive == null)
             isActive = true;
-        }
     }
 
     public Integer getUserId() {
@@ -208,20 +201,11 @@ public class User {
         this.userBlock = userBlock;
     }
 
-    public Set<User> getAssignedReporters() {
-        return assignedReporters;
+    public Set<ModeratorReporter> getModeratorRelations() {
+        return moderatorRelations;
     }
 
-    public void setAssignedReporters(Set<User> assignedReporters) {
-        this.assignedReporters = assignedReporters;
+    public void setModeratorRelations(Set<ModeratorReporter> moderatorRelations) {
+        this.moderatorRelations = moderatorRelations;
     }
-
-    public Set<User> getModerators() {
-        return moderators;
-    }
-
-    public void setModerators(Set<User> moderators) {
-        this.moderators = moderators;
-    }
-
 }
