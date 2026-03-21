@@ -5,6 +5,7 @@ import com.tvcanaria.dto.comment.CommentResponse;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Comment;
 import com.tvcanaria.entity.CommentReport;
+import com.tvcanaria.entity.ModeratorReporter;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.entity.UserBlock;
 import com.tvcanaria.repository.ArticleRepository;
@@ -144,8 +145,9 @@ public class CommentService {
 
         boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
 
-        boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
-                .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
+                .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
+                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
 
         boolean hasEnoughReports = comment.getOffenseCount() >= 5;
 
@@ -173,9 +175,9 @@ public class CommentService {
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
 
-        boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
-                .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
-
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
+                .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
+                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
         if (!isAdmin && !isAssignedModerator) {
             throw new RuntimeException("No tienes permisos para moderar este comentario");
         }
@@ -232,8 +234,9 @@ public class CommentService {
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
 
-        boolean isAssignedModerator = comment.getArticle().getAuthor().getModerators().stream()
-                .anyMatch(moderator -> moderator.getUserId().equals(user.getUserId()));
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
+                .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
+                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
 
         if (!isAdmin && !isAssignedModerator) {
             throw new RuntimeException("No tienes permisos para moderar este comentario");
