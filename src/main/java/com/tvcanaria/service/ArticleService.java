@@ -42,22 +42,14 @@ public class ArticleService {
         return article.getAuthor().getUsername().equals(username);
     }
 
-    private void checkPermission(Integer articleId, Authentication auth) {
-
-        User user = userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+    private void checkPermission(Article article, User user) {
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
         boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
 
-        if (isAdmin)
-            return;
+        if (isAdmin) return;
 
-        if (user.getRole() == User.Role.REPORTER && isAuthor)
-            return;
+        if (user.getRole() == User.Role.REPORTER && isAuthor) return;
 
         throw new RuntimeException("No tiene permisos para esta acción");
     }
@@ -65,64 +57,52 @@ public class ArticleService {
     @Transactional
     public ArticleResponse changeVisibility(Integer id, Boolean hidden, Authentication auth) {
 
+        User user = getAuthenticatedUser(auth);
+
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        User user = userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        boolean isAdmin = user.getRole() == User.Role.ADMIN;
-        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
-
-        if (!isAdmin && !isAuthor) {
-            throw new RuntimeException("No tiene permisos para cambiar visibilidad");
-        }
+        checkPermission(article, user);
 
         article.setIsHidden(hidden);
-        articleRepository.save(article);
 
-        return new ArticleResponse(article);
+        return new ArticleResponse(articleRepository.save(article));
     }
 
     @Transactional
     public ArticleResponse updateArticle(Integer id, ArticleUpdateRequest request, Authentication auth) {
 
-        checkPermission(id, auth);
+        User user = getAuthenticatedUser(auth);
 
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        if (request.getTitle() != null) {
-            article.setTitle(request.getTitle());
-        }
+        checkPermission(article, user);
 
-        if (request.getLocation() != null) {
-            article.setLocation(request.getLocation());
-        }
-
-        if (request.getDescription() != null) {
-            article.setDescription(request.getDescription());
-        }
-
-        if (request.getIsHidden() != null) {
-            article.setIsHidden(request.getIsHidden());
-        }
+        if (request.getTitle() != null) article.setTitle(request.getTitle());
+        if (request.getLocation() != null) article.setLocation(request.getLocation());
+        if (request.getDescription() != null) article.setDescription(request.getDescription());
+        if (request.getIsHidden() != null) article.setIsHidden(request.getIsHidden());
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-            Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
-            article.setCategories(categories); // JPA actualizará la tabla intermedia
+
+            Set<Category> categories =
+                    categoryService.getCategoriesByIds(request.getCategoryIds());
+
+            article.setCategories(categories);
         }
 
-        articleRepository.save(article);
-
-        return new ArticleResponse(article);
+        return new ArticleResponse(articleRepository.save(article));
     }
-
+    
     public void deleteArticle(Integer id, Authentication auth) {
-        checkPermission(id, auth);
+    	User user = getAuthenticatedUser(auth);
+    	Article article = articleRepository.findById(id)
+    	        .orElseThrow(() -> new RuntimeException("Article not found"));
 
-        articleRepository.deleteById(id);
+    	checkPermission(article, user);
 
+    	articleRepository.delete(article);
     }
 
     public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, String authentication)
@@ -149,8 +129,11 @@ public class ArticleService {
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
 
-        if (request.getCategories() != null) {
-            Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
+        if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+
+            Set<Category> categories =
+                    categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
+
             article.setCategories(categories);
         }
 
@@ -179,8 +162,10 @@ public class ArticleService {
         }
     }
 
-    public List<Article> getArticlesByCategory(Integer categoryId) {
-        return articleRepository.findByCategoriesCategoryId(categoryId);
+    public List<ArticleResponse> getArticlesByCategory(Integer categoryId) {
+        return articleRepository.findByCategoriesCategoryId(categoryId).stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
     }
 
     public ArticleResponse getArticleById(Integer id) {
@@ -197,7 +182,7 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleResponse> getVisibleArticle() {
+    public List<ArticleResponse> getVisibleArticles() {
         return articleRepository.findByIsHiddenFalse()
                 .stream()
                 .map(ArticleResponse::new)
@@ -206,5 +191,10 @@ public class ArticleService {
 
     public List<Article> getArticlesByUserId(Integer userId) {
         return articleRepository.findByAuthorUserId(userId);
+    }
+    
+    private User getAuthenticatedUser(Authentication auth) {
+        return userRepository.findById(Integer.valueOf(auth.getName()))
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
