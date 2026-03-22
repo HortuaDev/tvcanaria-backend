@@ -1,9 +1,7 @@
 package com.tvcanaria.repository;
 
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.tvcanaria.entity.User;
 
@@ -21,9 +19,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByProviderId(String providerId);
 
-    @Query("SELECT u FROM User u JOIN u.assignedReporters r WHERE r.userId = :reporterId")
-    List<User> findModeratorsByReporter(Integer reporterId);
+    // @Query("SELECT u FROM User u JOIN u.assignedReporters r WHERE r.userId =
+    // :reporterId")
+    // List<User> findModeratorsByReporter(Integer reporterId);
 
-    @Query("SELECT u FROM User u JOIN u.moderators m WHERE m.userId = :moderatorId")
-    List<User> findReportersByModerator(Integer moderatorId);
+    // @Query("SELECT u FROM User u JOIN u.moderators m WHERE m.userId =
+    // :moderatorId")
+    // List<User> findReportersByModerator(Integer moderatorId);
 }
