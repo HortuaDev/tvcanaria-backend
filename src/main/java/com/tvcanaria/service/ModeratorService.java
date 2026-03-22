@@ -177,4 +177,39 @@ public class ModeratorService {
                 .map(r -> r.getStatus() == ModeratorReporter.Status.ACCEPTED)
                 .orElse(false);
     }
+
+    @Transactional(readOnly = true)
+    public List<ModeratorResponse> getMyRequests(Authentication auth) {
+        Integer reporterId = Integer.valueOf(auth.getName());
+        return moderatorReporterRepository.findByReporter_UserId(reporterId)
+                .stream()
+                .map(ModeratorResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public UserSummaryResponse searchUserByEmail(String email, Authentication auth) {
+        System.out.println(email);
+        Integer reporterId = Integer.valueOf(auth.getName());
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (user.getUserId().equals(reporterId)) {
+            throw new RuntimeException("No puedes enviarte una solicitud a ti mismo");
+        }
+
+        return mapToUserSummary(user);
+    }
+
+    @Transactional
+    public void cancelRequest(Integer requestId, Authentication auth) {
+        ModeratorReporter request = moderatorReporterRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+        Integer reporterId = Integer.valueOf(auth.getName());
+        if (!request.getReporter().getUserId().equals(reporterId)) {
+            throw new RuntimeException("No tienes permisos para cancelar esta solicitud");
+        }
+
+        moderatorReporterRepository.delete(request);
+    }
 }
