@@ -71,4 +71,26 @@ public class ModeratorController {
         boolean result = moderatorService.isModeratorOf(userId, reporterId);
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/requests/my-requests")
+    @PreAuthorize("hasRole('REPORTER')")
+    public ResponseEntity<List<ModeratorResponse>> getMyRequests(Authentication authentication) {
+        return ResponseEntity.ok(moderatorService.getMyRequests(authentication));
+    }
+
+    @GetMapping("/search-user")
+    @PreAuthorize("hasRole('REPORTER')")
+    public ResponseEntity<UserSummaryResponse> searchUser(
+            @RequestParam String email,
+            Authentication authentication) {
+        return ResponseEntity.ok(moderatorService.searchUserByEmail(email, authentication));
+    }
+
+    @DeleteMapping("/requests/{id}")
+    public ResponseEntity<?> cancelRequest(
+            @PathVariable Integer id,
+            Authentication authentication) {
+        moderatorService.cancelRequest(id, authentication);
+        return ResponseEntity.noContent().build();
+    }
 }
