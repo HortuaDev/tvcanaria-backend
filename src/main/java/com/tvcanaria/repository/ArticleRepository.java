@@ -3,6 +3,7 @@ package com.tvcanaria.repository;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,8 +14,12 @@ import com.tvcanaria.entity.Article;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Integer> {
 
-    List<Article> findByIsHiddenFalse();
-
+	@EntityGraph(attributePaths = {"author", "categories"})
+	List<Article> findAll();
+	
+	@EntityGraph(attributePaths = {"author", "categories"})
+	List<Article> findByIsHiddenFalse();
+	
     List<Article> findByCategoriesCategoryId(Integer categoryId);
 
     @Query(value = """

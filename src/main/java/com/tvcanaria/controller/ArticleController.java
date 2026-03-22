@@ -73,7 +73,7 @@ public class ArticleController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllArticles(
+    public ResponseEntity<List<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) Boolean onlyVisible) {
 
@@ -82,7 +82,7 @@ public class ArticleController {
         }
 
         if (Boolean.TRUE.equals(onlyVisible)) {
-            return ResponseEntity.ok(articleService.getVisibleArticle());
+            return ResponseEntity.ok(articleService.getVisibleArticles());
         }
 
         return ResponseEntity.ok(articleService.getAllArticles());

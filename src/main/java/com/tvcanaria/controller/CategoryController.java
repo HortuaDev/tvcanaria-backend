@@ -1,6 +1,6 @@
 package com.tvcanaria.controller;
 
-import com.tvcanaria.entity.Category;
+import com.tvcanaria.dto.category.CategoryResponse;
 import com.tvcanaria.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +17,15 @@ public class CategoryController {
 
     // Obtener todas las categorías (público)
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
+    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+        List<CategoryResponse> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
     // Obtener una categoría por ID (público)
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
-        Category category = categoryService.getCategoryById(id);
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Integer id) {
+    	CategoryResponse category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
 
