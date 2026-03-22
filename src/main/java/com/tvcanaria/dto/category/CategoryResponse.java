@@ -1,23 +1,17 @@
 package com.tvcanaria.dto.category;
 
+import com.tvcanaria.entity.Category;
+
 public class CategoryResponse {
 
     private Integer categoryId;
     private String name;
 
-    public Integer getCategoryId() {
-        return categoryId;
+    public CategoryResponse(Category category) {
+        this.categoryId = category.getCategoryId();
+        this.name = category.getName();
     }
 
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Integer getCategoryId() { return categoryId; }
+    public String getName() { return name; }
 }
