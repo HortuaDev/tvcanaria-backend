@@ -1,6 +1,9 @@
 package com.tvcanaria.controller;
 
 import jakarta.validation.Valid;
+
+import java.util.Set;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +11,8 @@ import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.dto.auth.GoogleTokenRequest;
 import com.tvcanaria.dto.auth.LoginRequest;
 import com.tvcanaria.dto.auth.RegisterRequest;
+import com.tvcanaria.dto.category.CategoryResponse;
+import com.tvcanaria.dto.category.UserCategoryRequest;
 import com.tvcanaria.dto.profile.UpdateProfileRequest;
 import com.tvcanaria.dto.profile.UserProfileResponse;
 import com.tvcanaria.service.AuthService;
@@ -57,5 +62,23 @@ public class AuthController {
         String email = authentication.getName();
         UserProfileResponse profile = authService.updateUserProfile(email, request);
         return ResponseEntity.ok(profile);
+    }
+    
+    // Obtener categorías favoritas
+    @GetMapping("/{id}/categories")
+    public ResponseEntity<Set<CategoryResponse>> getUserCategories(@PathVariable Integer id) {
+        return ResponseEntity.ok(authService.getUserCategories(id));
+    }
+
+    // Establecer o editar categorías favoritas
+    @PutMapping("/{id}/categories")
+    public ResponseEntity<Set<CategoryResponse>> updateUserCategories(
+            @PathVariable Integer id,
+            @RequestBody UserCategoryRequest request) {
+
+        Set<CategoryResponse> categories =
+        		authService.updateUserCategories(id, request.getCategoryIds());
+
+        return ResponseEntity.ok(categories);
     }
 }

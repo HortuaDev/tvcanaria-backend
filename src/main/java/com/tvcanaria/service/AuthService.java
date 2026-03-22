@@ -1,13 +1,18 @@
 package com.tvcanaria.service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.dto.auth.LoginRequest;
 import com.tvcanaria.dto.auth.RegisterRequest;
+import com.tvcanaria.dto.category.CategoryResponse;
 import com.tvcanaria.dto.profile.UpdateProfileRequest;
 import com.tvcanaria.dto.profile.UserProfileResponse;
+import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.exception.*;
 import com.tvcanaria.repository.UserRepository;
@@ -19,11 +24,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CategoryService categoryService;
 
-    public AuthService(UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
+    public AuthService(UserRepository userRepository, JwtTokenProvider jwtTokenProvider, CategoryService categoryService) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.jwtTokenProvider = jwtTokenProvider;
+        this.categoryService = categoryService;
     }
 
     @Transactional
@@ -131,4 +138,35 @@ public class AuthService {
             throw new RuntimeException("Identificador de usuario inválido");
         }
     }
+    
+    public Set<CategoryResponse> getUserCategories(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getCategories()
+                .stream()
+                .map(CategoryResponse::new)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<CategoryResponse> updateUserCategories(Integer userId, Set<Integer> categoryIds) {
+
+        if (categoryIds.size() > 5) {
+            throw new RuntimeException("User cannot have more than 5 favorite categories");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Set<Category> categories = categoryService.getCategoriesByIds(categoryIds);
+
+        user.setCategories(categories);
+
+        userRepository.save(user);
+
+        return categories.stream()
+                .map(CategoryResponse::new)
+                .collect(Collectors.toSet());
+    }
+    
 }
