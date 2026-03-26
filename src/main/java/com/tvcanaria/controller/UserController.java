@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,8 @@ import com.tvcanaria.dto.category.CategoryResponse;
 import com.tvcanaria.dto.category.UserCategoryRequest;
 import com.tvcanaria.dto.profile.UpdateProfileRequest;
 import com.tvcanaria.dto.profile.UserProfileResponse;
+import com.tvcanaria.dto.user.CreateUserAdminRequest;
+import com.tvcanaria.dto.user.UpdateUserAdminRequest;
 import com.tvcanaria.service.UserService;
 
 import jakarta.validation.Valid;
@@ -68,8 +71,21 @@ public class UserController {
             @PathVariable Integer id,
             @RequestParam(required = false) String reason) {
 
-        // Llamamos al nuevo método del servicio
         UserProfileResponse updatedUser = userService.toggleUserStatus(id, reason);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<UserProfileResponse> createUser(@Valid @RequestBody CreateUserAdminRequest request) {
+        return ResponseEntity.ok(userService.createUser(request));
+    }
+
+    @PutMapping("/{id}/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<UserProfileResponse> updateUserByAdmin(
+            @PathVariable Integer id,
+            @Valid @RequestBody UpdateUserAdminRequest request) {
+        return ResponseEntity.ok(userService.updateUserByAdmin(id, request));
     }
 }

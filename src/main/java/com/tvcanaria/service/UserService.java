@@ -4,11 +4,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tvcanaria.dto.category.CategoryResponse;
 import com.tvcanaria.dto.profile.UpdateProfileRequest;
 import com.tvcanaria.dto.profile.UserProfileResponse;
+import com.tvcanaria.dto.user.CreateUserAdminRequest;
+import com.tvcanaria.dto.user.UpdateUserAdminRequest;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.entity.UserBlock;
@@ -23,12 +26,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final CategoryService categoryService;
     private final UserBlockRepository userBlockRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, CategoryService categoryService,
-            UserBlockRepository userBlockRepository) {
+            UserBlockRepository userBlockRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.categoryService = categoryService;
         this.userBlockRepository = userBlockRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserProfileResponse> findAllUsers() {
@@ -107,6 +112,47 @@ public class UserService {
 
         user = userRepository.save(user);
         return new UserProfileResponse(user);
+    }
+
+    @Transactional
+    public UserProfileResponse createUser(CreateUserAdminRequest request) {
+        if (userRepository.existsByUsername(request.getUsername()))
+            throw new RuntimeException("El usuario ya existe");
+        if (userRepository.existsByEmail(request.getEmail()))
+            throw new RuntimeException("El email ya existe");
+
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setRole(request.getRole());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setIsActive(true);
+
+        return new UserProfileResponse(userRepository.save(user));
+    }
+
+    @Transactional
+    public UserProfileResponse updateUserByAdmin(Integer userId, UpdateUserAdminRequest request) {
+        User user = findUserById(userId);
+
+        // Validar si cambia el username/email y si ya existen
+        if (!user.getUsername().equals(request.getUsername())
+                && userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("El nombre de usuario ya está en uso");
+        }
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("El email ya está en uso");
+        }
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setRole(request.getRole());
+
+        return new UserProfileResponse(userRepository.save(user));
     }
 
     private User findUserById(Integer id) {
