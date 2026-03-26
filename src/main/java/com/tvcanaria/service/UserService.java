@@ -29,11 +29,11 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, CategoryService categoryService,
-            UserBlockRepository userBlockRepository, BCryptPasswordEncoder passwordEncoder) {
+            UserBlockRepository userBlockRepository) {
         this.userRepository = userRepository;
         this.categoryService = categoryService;
         this.userBlockRepository = userBlockRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public List<UserProfileResponse> findAllUsers() {
