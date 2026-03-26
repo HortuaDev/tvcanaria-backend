@@ -1,5 +1,6 @@
 package com.tvcanaria.service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,13 @@ public class UserService {
     public UserService(UserRepository userRepository, CategoryService categoryService) {
         this.userRepository = userRepository;
         this.categoryService = categoryService;
+    }
+
+    public List<UserProfileResponse> findAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserProfileResponse::new)
+                .collect(Collectors.toList());
     }
 
     public UserProfileResponse getUserProfile(String userIdStr) {
