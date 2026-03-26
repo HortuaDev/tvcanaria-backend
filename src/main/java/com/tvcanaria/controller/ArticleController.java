@@ -112,4 +112,10 @@ public class ArticleController {
         List<ArticleResponse> articles = articleService.getRecentArticlesFromFavoriteCategories(authentication);
         return ResponseEntity.ok(articles);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ArticleResponse>> searchArticles(@RequestParam(name = "q") String keyword) {
+        List<ArticleResponse> results = articleService.searchArticlesByTitle(keyword);
+        return ResponseEntity.ok(results);
+    }
 }

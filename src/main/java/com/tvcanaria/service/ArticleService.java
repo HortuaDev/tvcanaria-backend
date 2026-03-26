@@ -213,6 +213,17 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
+    public List<ArticleResponse> searchArticlesByTitle(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+
+        return articleRepository.searchVisibleArticlesByTitle(keyword.trim())
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
+
     public ArticleResponse getArticleById(Integer id) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));

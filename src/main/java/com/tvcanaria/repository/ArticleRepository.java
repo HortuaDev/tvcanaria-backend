@@ -63,5 +63,12 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
   List<Article> findFallbackRelatedArticles(@Param("articleId") Integer articleId,
       Pageable pageable);
 
+  @EntityGraph(attributePaths = { "author", "categories" })
+  @Query("SELECT a FROM Article a " +
+      "WHERE LOWER(a.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+      "AND a.isHidden = false " +
+      "ORDER BY a.createdAt DESC, COALESCE(a.rating, 0) DESC")
+  List<Article> searchVisibleArticlesByTitle(@Param("keyword") String keyword);
+
   List<Article> findByAuthorUserId(Integer userId);
 }
