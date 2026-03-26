@@ -72,6 +72,12 @@ public class ArticleController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<ArticleResponse>> getRelatedArticles(@PathVariable Integer id) {
+        List<ArticleResponse> relatedArticles = articleService.getRelatedArticles(id);
+        return ResponseEntity.ok(relatedArticles);
+    }
+
     @GetMapping
     public ResponseEntity<List<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,

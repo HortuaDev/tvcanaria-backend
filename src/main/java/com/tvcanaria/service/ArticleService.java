@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import com.tvcanaria.dto.article.ArticleResponse;
@@ -185,6 +187,27 @@ public class ArticleService {
         }
 
         return articleRepository.findTop20DistinctByCategoriesInAndIsHiddenFalseOrderByCreatedAtDesc(favoriteCategories)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ArticleResponse> getRelatedArticles(Integer articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
+
+        Set<Category> categories = article.getCategories();
+
+        Pageable topTen = PageRequest.of(0, 10);
+
+        if (categories == null || categories.isEmpty()) {
+            return articleRepository.findFallbackRelatedArticles(articleId, topTen)
+                    .stream()
+                    .map(ArticleResponse::new)
+                    .collect(Collectors.toList());
+        }
+
+        return articleRepository.findRelatedArticles(categories, articleId, topTen)
                 .stream()
                 .map(ArticleResponse::new)
                 .collect(Collectors.toList());
