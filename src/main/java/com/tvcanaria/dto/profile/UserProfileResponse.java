@@ -10,6 +10,7 @@ public class UserProfileResponse {
     private String lastName;
     private String email;
     private String role;
+    private Boolean isActive;
     private String authProvider;
     private LocalDateTime createdAt;
 
@@ -20,6 +21,7 @@ public class UserProfileResponse {
         this.lastName = user.getLastName();
         this.email = user.getEmail();
         this.role = translateRole(user.getRole());
+        this.isActive = user.getIsActive();
         this.authProvider = user.getAuthProvider();
         this.createdAt = user.getCreatedAt();
     }
@@ -96,5 +98,13 @@ public class UserProfileResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 }
