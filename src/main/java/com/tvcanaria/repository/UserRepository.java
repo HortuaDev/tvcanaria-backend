@@ -19,11 +19,4 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByProviderId(String providerId);
 
-    // @Query("SELECT u FROM User u JOIN u.assignedReporters r WHERE r.userId =
-    // :reporterId")
-    // List<User> findModeratorsByReporter(Integer reporterId);
-
-    // @Query("SELECT u FROM User u JOIN u.moderators m WHERE m.userId =
-    // :moderatorId")
-    // List<User> findReportersByModerator(Integer moderatorId);
 }
