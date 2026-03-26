@@ -47,9 +47,11 @@ public class ArticleService {
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
         boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
 
-        if (isAdmin) return;
+        if (isAdmin)
+            return;
 
-        if (user.getRole() == User.Role.REPORTER && isAuthor) return;
+        if (user.getRole() == User.Role.REPORTER && isAuthor)
+            return;
 
         throw new RuntimeException("No tiene permisos para esta acción");
     }
@@ -79,30 +81,33 @@ public class ArticleService {
 
         checkPermission(article, user);
 
-        if (request.getTitle() != null) article.setTitle(request.getTitle());
-        if (request.getLocation() != null) article.setLocation(request.getLocation());
-        if (request.getDescription() != null) article.setDescription(request.getDescription());
-        if (request.getIsHidden() != null) article.setIsHidden(request.getIsHidden());
+        if (request.getTitle() != null)
+            article.setTitle(request.getTitle());
+        if (request.getLocation() != null)
+            article.setLocation(request.getLocation());
+        if (request.getDescription() != null)
+            article.setDescription(request.getDescription());
+        if (request.getIsHidden() != null)
+            article.setIsHidden(request.getIsHidden());
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
 
-            Set<Category> categories =
-                    categoryService.getCategoriesByIds(request.getCategoryIds());
+            Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
 
             article.setCategories(categories);
         }
 
         return new ArticleResponse(articleRepository.save(article));
     }
-    
+
     public void deleteArticle(Integer id, Authentication auth) {
-    	User user = getAuthenticatedUser(auth);
-    	Article article = articleRepository.findById(id)
-    	        .orElseThrow(() -> new RuntimeException("Article not found"));
+        User user = getAuthenticatedUser(auth);
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Article not found"));
 
-    	checkPermission(article, user);
+        checkPermission(article, user);
 
-    	articleRepository.delete(article);
+        articleRepository.delete(article);
     }
 
     public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, String authentication)
@@ -131,8 +136,7 @@ public class ArticleService {
 
         if (request.getCategories() != null && !request.getCategories().isEmpty()) {
 
-            Set<Category> categories =
-                    categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
+            Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
 
             article.setCategories(categories);
         }
@@ -168,6 +172,24 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
+    public List<ArticleResponse> getRecentArticlesFromFavoriteCategories(Authentication auth) {
+        User user = getAuthenticatedUser(auth);
+
+        Set<Category> favoriteCategories = user.getCategories();
+
+        if (favoriteCategories == null || favoriteCategories.isEmpty()) {
+            return articleRepository.findTop20ByIsHiddenFalseOrderByCreatedAtDesc()
+                    .stream()
+                    .map(ArticleResponse::new)
+                    .collect(Collectors.toList());
+        }
+
+        return articleRepository.findTop20DistinctByCategoriesInAndIsHiddenFalseOrderByCreatedAtDesc(favoriteCategories)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
+
     public ArticleResponse getArticleById(Integer id) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
@@ -192,7 +214,7 @@ public class ArticleService {
     public List<Article> getArticlesByUserId(Integer userId) {
         return articleRepository.findByAuthorUserId(userId);
     }
-    
+
     private User getAuthenticatedUser(Authentication auth) {
         return userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new RuntimeException("User not found"));

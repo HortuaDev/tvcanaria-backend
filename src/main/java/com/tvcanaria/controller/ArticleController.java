@@ -99,4 +99,11 @@ public class ArticleController {
         List<ArticleResponse> articles = articleService.getMyArticles(authentication);
         return ResponseEntity.ok(articles);
     }
+
+    @GetMapping("/recommended")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ArticleResponse>> getFeedFromFavoriteCategories(Authentication authentication) {
+        List<ArticleResponse> articles = articleService.getRecentArticlesFromFavoriteCategories(authentication);
+        return ResponseEntity.ok(articles);
+    }
 }
