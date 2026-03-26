@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tvcanaria.dto.category.CategoryResponse;
@@ -59,5 +60,16 @@ public class UserController {
             @PathVariable Integer id,
             @RequestBody UserCategoryRequest request) {
         return ResponseEntity.ok(userService.updateUserCategories(id, request.getCategoryIds()));
+    }
+
+    @PutMapping("/{id}/toggle-status")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<UserProfileResponse> toggleUserStatus(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String reason) {
+
+        // Llamamos al nuevo método del servicio
+        UserProfileResponse updatedUser = userService.toggleUserStatus(id, reason);
+        return ResponseEntity.ok(updatedUser);
     }
 }

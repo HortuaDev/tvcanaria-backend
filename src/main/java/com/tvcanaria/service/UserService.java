@@ -11,6 +11,8 @@ import com.tvcanaria.dto.profile.UpdateProfileRequest;
 import com.tvcanaria.dto.profile.UserProfileResponse;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.entity.UserBlock;
+import com.tvcanaria.repository.UserBlockRepository;
 import com.tvcanaria.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -20,10 +22,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final CategoryService categoryService;
+    private final UserBlockRepository userBlockRepository;
 
-    public UserService(UserRepository userRepository, CategoryService categoryService) {
+    public UserService(UserRepository userRepository, CategoryService categoryService,
+            UserBlockRepository userBlockRepository) {
         this.userRepository = userRepository;
         this.categoryService = categoryService;
+        this.userBlockRepository = userBlockRepository;
     }
 
     public List<UserProfileResponse> findAllUsers() {
@@ -72,6 +77,36 @@ public class UserService {
         user.setCategories(categories);
 
         return categories.stream().map(CategoryResponse::new).collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public UserProfileResponse toggleUserStatus(Integer userId, String reason) {
+        User user = findUserById(userId);
+
+        if (user.getIsActive()) {
+            // LÓGICA DE DESACTIVACIÓN
+            user.setIsActive(false);
+
+            UserBlock block = new UserBlock();
+            block.setUser(user);
+            block.setReason(reason != null ? reason : "Desactivación indefinida por administrador");
+
+            userBlockRepository.save(block);
+            user.setUserBlock(block);
+
+        } else {
+            // LÓGICA DE ACTIVACIÓN
+            user.setIsActive(true);
+
+            UserBlock existingBlock = user.getUserBlock();
+            if (existingBlock != null) {
+                user.setUserBlock(null);
+                userBlockRepository.delete(existingBlock);
+            }
+        }
+
+        user = userRepository.save(user);
+        return new UserProfileResponse(user);
     }
 
     private User findUserById(Integer id) {
