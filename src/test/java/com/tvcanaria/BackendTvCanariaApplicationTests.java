@@ -1,4 +1,4 @@
-package com.accesodatos;
+package com.tvcanaria;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
