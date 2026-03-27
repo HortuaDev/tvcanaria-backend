@@ -22,7 +22,7 @@ public class ReporterService {
         Role role = user.getRole();
 
         if (role != Role.REPORTER || role != Role.ADMIN) {
-            throw new RuntimeException("El usuario no tiene permisos de reportero o administrador");
+            throw new RuntimeException("El usuario no es reportero o administrador, no tiene un perfil público.");
         }
 
         return new ReporterProfileResponse(user.getUsername(), user.getFirstName(), user.getLastName(), user.getCreatedAt());
