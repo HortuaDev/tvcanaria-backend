@@ -155,6 +155,17 @@ public class UserService {
         return new UserProfileResponse(userRepository.save(user));
     }
 
+    public List<UserProfileResponse> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return findAllUsers();
+        }
+
+        return userRepository.searchUsersByKeyword(query.trim())
+                .stream()
+                .map(UserProfileResponse::new)
+                .collect(Collectors.toList());
+    }
+
     private User findUserById(Integer id) {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }

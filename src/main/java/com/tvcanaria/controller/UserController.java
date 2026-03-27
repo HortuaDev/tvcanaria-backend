@@ -37,7 +37,13 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<UserProfileResponse>> getAllUsers() {
+    public ResponseEntity<List<UserProfileResponse>> getUsers(
+            @RequestParam(value = "search", required = false) String search) {
+
+        if (search != null && !search.trim().isEmpty()) {
+            return ResponseEntity.ok(userService.searchUsers(search));
+        }
+
         return ResponseEntity.ok(userService.findAllUsers());
     }
 
