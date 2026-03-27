@@ -19,6 +19,9 @@ import com.tvcanaria.dto.user.UpdateUserAdminRequest;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.entity.UserBlock;
+import com.tvcanaria.exception.BadRequestException;
+import com.tvcanaria.exception.DuplicateResourceException;
+import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.UserBlockRepository;
 import com.tvcanaria.repository.UserRepository;
 
@@ -63,7 +66,7 @@ public class UserService {
 
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail())) {
-                throw new RuntimeException("Email ya en uso");
+                throw new DuplicateResourceException("El email ya está en uso");
             }
             user.setEmail(request.getEmail());
         }
@@ -79,7 +82,7 @@ public class UserService {
     @Transactional
     public Set<CategoryResponse> updateUserCategories(Integer userId, Set<Integer> categoryIds) {
         if (categoryIds.size() > 5)
-            throw new RuntimeException("Máximo 5 categorías");
+            throw new BadRequestException("No se pueden asignar más de 5 categorías");
 
         User user = findUserById(userId);
         Set<Category> categories = categoryService.getCategoriesByIds(categoryIds);
@@ -93,7 +96,6 @@ public class UserService {
         User user = findUserById(userId);
 
         if (user.getIsActive()) {
-            // LÓGICA DE DESACTIVACIÓN
             user.setIsActive(false);
 
             UserBlock block = new UserBlock();
@@ -104,7 +106,6 @@ public class UserService {
             user.setUserBlock(block);
 
         } else {
-            // LÓGICA DE ACTIVACIÓN
             user.setIsActive(true);
 
             UserBlock existingBlock = user.getUserBlock();
@@ -121,9 +122,9 @@ public class UserService {
     @Transactional
     public UserProfileResponse createUser(CreateUserAdminRequest request) {
         if (userRepository.existsByUsername(request.getUsername()))
-            throw new RuntimeException("El usuario ya existe");
+            throw new DuplicateResourceException("El nombre de usuario ya existe");
         if (userRepository.existsByEmail(request.getEmail()))
-            throw new RuntimeException("El email ya existe");
+            throw new DuplicateResourceException("El email ya existe");
 
         User user = new User();
         user.setFirstName(request.getFirstName());
@@ -141,13 +142,12 @@ public class UserService {
     public UserProfileResponse updateUserByAdmin(Integer userId, UpdateUserAdminRequest request) {
         User user = findUserById(userId);
 
-        // Validar si cambia el username/email y si ya existen
         if (!user.getUsername().equals(request.getUsername())
                 && userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("El nombre de usuario ya está en uso");
+            throw new DuplicateResourceException("El nombre de usuario ya está en uso");
         }
         if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("El email ya está en uso");
+            throw new DuplicateResourceException("El email ya está en uso");
         }
 
         user.setFirstName(request.getFirstName());
@@ -176,7 +176,6 @@ public class UserService {
                 ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
                 : null;
 
-        // 3. Llamar a la base de datos
         return userRepository.searchAndFilterUsers(query, dateFrom, dateTo, sort)
                 .stream()
                 .map(UserProfileResponse::new)
@@ -184,6 +183,6 @@ public class UserService {
     }
 
     private User findUserById(Integer id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
     }
 }

@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.exception.AccountDisabledException;
+import com.tvcanaria.exception.ExternalServiceException;
+import com.tvcanaria.exception.InvalidCredentialsException;
 import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.security.JwtTokenProvider;
 
@@ -41,6 +44,12 @@ public class OAuth2Service {
         String lastName = oAuth2User.getAttribute("family_name");
 
         User user = findOrCreateGoogleUser(email, googleId, firstName, lastName);
+
+        // Seguridad: Evitar que usuarios baneados entren usando Google Login
+        if (!user.getIsActive()) {
+            throw new AccountDisabledException("Tu cuenta ha sido desactivada. Contacta al administrador");
+        }
+
         String token = jwtTokenProvider.generateToken(user);
 
         return new AuthResponse(
@@ -66,7 +75,7 @@ public class OAuth2Service {
             GoogleIdToken idToken = verifier.verify(idTokenString);
 
             if (idToken == null) {
-                throw new RuntimeException("Token de Google inválido");
+                throw new InvalidCredentialsException("Token de Google inválido, expirado o manipulado");
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
@@ -77,6 +86,12 @@ public class OAuth2Service {
             String lastName = (String) payload.get("family_name");
 
             User user = findOrCreateGoogleUser(email, googleId, firstName, lastName);
+
+            // Seguridad: Evitar que usuarios baneados entren usando Google Login
+            if (!user.getIsActive()) {
+                throw new AccountDisabledException("Tu cuenta ha sido desactivada. Contacta al administrador");
+            }
+
             String token = jwtTokenProvider.generateToken(user);
 
             return new AuthResponse(
@@ -86,8 +101,13 @@ public class OAuth2Service {
                     user.getEmail(),
                     user.getRole().name());
 
+        } catch (InvalidCredentialsException | AccountDisabledException e) {
+
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Error validando token de Google: " + e.getMessage());
+
+            throw new ExternalServiceException(
+                    "Error conectando con los servidores de Google para validar la identidad");
         }
     }
 
@@ -99,13 +119,11 @@ public class OAuth2Service {
                 .orElseGet(() -> {
                     return userRepository.findByEmail(email)
                             .map(existingUser -> {
-                                // Vincular cuenta existente con Google
                                 existingUser.setAuthProvider("GOOGLE");
                                 existingUser.setProviderId(googleId);
                                 return userRepository.save(existingUser);
                             })
                             .orElseGet(() -> {
-                                // Crear nuevo usuario
                                 User newUser = new User();
                                 newUser.setEmail(email);
                                 newUser.setUsername(generateUsername(email));

@@ -5,6 +5,10 @@ import com.tvcanaria.dto.moderator.ModeratorResponse;
 import com.tvcanaria.dto.user.UserSummaryResponse;
 import com.tvcanaria.entity.ModeratorReporter;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.exception.BadRequestException;
+import com.tvcanaria.exception.DuplicateResourceException;
+import com.tvcanaria.exception.ForbiddenAccessException;
+import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.ModeratorReporterRepository;
 import com.tvcanaria.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,28 +26,28 @@ public class ModeratorService {
     private UserRepository userRepository;
 
     @Autowired
-    private ModeratorReporterRepository moderatorReporterRepository; // 👈 añadir
+    private ModeratorReporterRepository moderatorReporterRepository;
 
     @Transactional
     public void assignReporterToModerator(Integer moderatorId, Integer reporterId) {
         User moderator = userRepository.findById(moderatorId)
-                .orElseThrow(() -> new RuntimeException("Moderador no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId));
 
         if (moderator.getRole() != User.Role.MODERATOR && moderator.getRole() != User.Role.ADMIN) {
-            throw new RuntimeException("El usuario no es un moderador");
+            throw new BadRequestException("El usuario seleccionado no tiene el rol de moderador");
         }
 
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reportero no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reportero no encontrado con ID: " + reporterId));
 
         if (reporter.getRole() != User.Role.REPORTER) {
-            throw new RuntimeException("El usuario no es un reportero");
+            throw new BadRequestException("El usuario seleccionado no tiene el rol de reportero");
         }
 
         moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
                 .ifPresent(r -> {
-                    throw new RuntimeException("Ya existe una relación entre estos usuarios");
+                    throw new DuplicateResourceException("Ya existe una relación entre estos usuarios");
                 });
 
         ModeratorReporter relation = new ModeratorReporter();
@@ -57,15 +61,16 @@ public class ModeratorService {
     public void removeReporterFromModerator(Integer moderatorId, Integer reporterId) {
         ModeratorReporter relation = moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
-                .orElseThrow(() -> new RuntimeException("Relación no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada entre estos usuarios"));
 
         moderatorReporterRepository.delete(relation);
     }
 
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getReportersByModerator(Integer moderatorId) {
-        userRepository.findById(moderatorId)
-                .orElseThrow(() -> new RuntimeException("Moderador no encontrado"));
+        if (!userRepository.existsById(moderatorId)) {
+            throw new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId);
+        }
 
         return moderatorReporterRepository
                 .findAcceptedReportersByModerator(moderatorId, ModeratorReporter.Status.ACCEPTED)
@@ -76,8 +81,9 @@ public class ModeratorService {
 
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getModeratorsByReporter(Integer reporterId) {
-        userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reportero no encontrado"));
+        if (!userRepository.existsById(reporterId)) {
+            throw new ResourceNotFoundException("Reportero no encontrado con ID: " + reporterId);
+        }
 
         return moderatorReporterRepository
                 .findAcceptedModeratorsByReporter(reporterId, ModeratorReporter.Status.ACCEPTED)
@@ -93,14 +99,14 @@ public class ModeratorService {
         moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(request.getModeratorId(), reporterId)
                 .ifPresent(r -> {
-                    throw new RuntimeException("Ya existe una solicitud entre estos usuarios");
+                    throw new DuplicateResourceException("Ya existe una solicitud previa entre estos usuarios");
                 });
 
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado (reportero) no encontrado"));
 
         User moderator = userRepository.findById(request.getModeratorId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario destino (moderador) no encontrado"));
 
         ModeratorReporter moderatorReporter = new ModeratorReporter();
         moderatorReporter.setReporter(reporter);
@@ -125,11 +131,11 @@ public class ModeratorService {
     @Transactional
     public void acceptRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con ID: " + requestId));
 
         Integer moderatorId = Integer.valueOf(auth.getName());
         if (!request.getModerator().getUserId().equals(moderatorId)) {
-            throw new RuntimeException("No tiene permisos para aceptar esta solicitud");
+            throw new ForbiddenAccessException("No tienes permisos para aceptar esta solicitud");
         }
 
         request.setStatus(ModeratorReporter.Status.ACCEPTED);
@@ -147,11 +153,11 @@ public class ModeratorService {
     @Transactional
     public void rejectRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con ID: " + requestId));
 
         Integer moderatorId = Integer.valueOf(auth.getName());
         if (!request.getModerator().getUserId().equals(moderatorId)) {
-            throw new RuntimeException("No tiene permisos para rechazar esta solicitud");
+            throw new ForbiddenAccessException("No tienes permisos para rechazar esta solicitud");
         }
 
         request.setStatus(ModeratorReporter.Status.REJECTED);
@@ -188,13 +194,14 @@ public class ModeratorService {
     }
 
     public UserSummaryResponse searchUserByEmail(String email, Authentication auth) {
-        System.out.println(email);
         Integer reporterId = Integer.valueOf(auth.getName());
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("No se encontró ningún usuario con el email: " + email));
 
         if (user.getUserId().equals(reporterId)) {
-            throw new RuntimeException("No puedes enviarte una solicitud a ti mismo");
+            throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
         }
 
         return mapToUserSummary(user);
@@ -203,11 +210,11 @@ public class ModeratorService {
     @Transactional
     public void cancelRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con ID: " + requestId));
 
         Integer reporterId = Integer.valueOf(auth.getName());
         if (!request.getReporter().getUserId().equals(reporterId)) {
-            throw new RuntimeException("No tienes permisos para cancelar esta solicitud");
+            throw new ForbiddenAccessException("No tienes permisos para cancelar esta solicitud");
         }
 
         moderatorReporterRepository.delete(request);

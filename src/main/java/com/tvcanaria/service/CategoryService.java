@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.tvcanaria.dto.category.CategoryResponse;
 import com.tvcanaria.entity.Category;
+import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.CategoryRepository;
 
 @Service
@@ -36,21 +37,15 @@ public class CategoryService {
     // Obtener una categoría por ID
     public CategoryResponse getCategoryById(Integer categoryId) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found with id " + categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + categoryId));
 
         return mapToResponse(category);
-    }
-
-    // Crear una nueva categoría
-    public CategoryResponse createCategory(Category category) {
-        Category savedCategory = categoryRepository.save(category);
-        return mapToResponse(savedCategory);
     }
 
     // Actualizar categoría existente
     public CategoryResponse updateCategory(Integer id, Category categoryData) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
 
         if (categoryData.getName() != null) {
             category.setName(categoryData.getName());
@@ -60,8 +55,11 @@ public class CategoryService {
         return mapToResponse(updated);
     }
 
-    // Borrar categoría
     public void deleteCategory(Integer id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("No se puede eliminar: Categoría no encontrada con ID " + id);
+        }
+
         categoryRepository.deleteById(id);
     }
 
