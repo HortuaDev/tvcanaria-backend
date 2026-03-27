@@ -38,13 +38,14 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserProfileResponse>> getUsers(
-            @RequestParam(value = "search", required = false) String search) {
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+            @RequestParam(value = "dateFrom", required = false) String dateFrom,
+            @RequestParam(value = "dateTo", required = false) String dateTo) {
 
-        if (search != null && !search.trim().isEmpty()) {
-            return ResponseEntity.ok(userService.searchUsers(search));
-        }
-
-        return ResponseEntity.ok(userService.findAllUsers());
+        // Ahora le pasamos todos los parámetros al servicio, incluso si son null
+        return ResponseEntity.ok(userService.searchUsers(search, sortBy, order, dateFrom, dateTo));
     }
 
     @GetMapping("/profile")

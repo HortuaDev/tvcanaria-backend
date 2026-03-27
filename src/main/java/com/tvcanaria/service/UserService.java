@@ -1,9 +1,13 @@
 package com.tvcanaria.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -155,12 +159,25 @@ public class UserService {
         return new UserProfileResponse(userRepository.save(user));
     }
 
-    public List<UserProfileResponse> searchUsers(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return findAllUsers();
-        }
+    public List<UserProfileResponse> searchUsers(String query, String sortBy, String order, String dateFromStr,
+            String dateToStr) {
 
-        return userRepository.searchUsersByKeyword(query.trim())
+        String sortProperty = "alphabetical".equals(sortBy) ? "username" : "createdAt";
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortProperty);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        // 3. Llamar a la base de datos
+        return userRepository.searchAndFilterUsers(query, dateFrom, dateTo, sort)
                 .stream()
                 .map(UserProfileResponse::new)
                 .collect(Collectors.toList());
