@@ -22,7 +22,7 @@ public class ModeratorService {
     private UserRepository userRepository;
 
     @Autowired
-    private ModeratorReporterRepository moderatorReporterRepository; // 👈 añadir
+    private ModeratorReporterRepository moderatorReporterRepository;
 
     @Transactional
     public void assignReporterToModerator(Integer moderatorId, Integer reporterId) {
