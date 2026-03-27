@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +19,10 @@ import com.tvcanaria.dto.article.ArticleUploadRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.exception.ForbiddenAccessException;
+import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.ArticleRepository;
 import com.tvcanaria.repository.UserRepository;
-import java.util.stream.Collectors;
 
 @Service
 public class ArticleService {
@@ -40,12 +42,11 @@ public class ArticleService {
 
     public boolean isAuthor(Integer articleId, String username) {
         Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId));
         return article.getAuthor().getUsername().equals(username);
     }
 
     private void checkPermission(Article article, User user) {
-
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
         boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
 
@@ -55,16 +56,15 @@ public class ArticleService {
         if (user.getRole() == User.Role.REPORTER && isAuthor)
             return;
 
-        throw new RuntimeException("No tiene permisos para esta acción");
+        throw new ForbiddenAccessException("No tiene permisos para modificar o eliminar este artículo");
     }
 
     @Transactional
     public ArticleResponse changeVisibility(Integer id, Boolean hidden, Authentication auth) {
-
         User user = getAuthenticatedUser(auth);
 
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + id));
 
         checkPermission(article, user);
 
@@ -75,11 +75,10 @@ public class ArticleService {
 
     @Transactional
     public ArticleResponse updateArticle(Integer id, ArticleUpdateRequest request, Authentication auth) {
-
         User user = getAuthenticatedUser(auth);
 
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + id));
 
         checkPermission(article, user);
 
@@ -93,21 +92,25 @@ public class ArticleService {
             article.setIsHidden(request.getIsHidden());
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-
             Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
-
             article.setCategories(categories);
         }
 
         return new ArticleResponse(articleRepository.save(article));
     }
 
+    @Transactional
     public void deleteArticle(Integer id, Authentication auth) {
         User user = getAuthenticatedUser(auth);
+
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + id));
 
         checkPermission(article, user);
+
+        if (article.getVideoUrl() != null && !article.getVideoUrl().isEmpty()) {
+            cloudinaryService.deleteVideoByUrl(article.getVideoUrl());
+        }
 
         articleRepository.delete(article);
     }
@@ -116,14 +119,13 @@ public class ArticleService {
             throws Exception {
 
         User user = userRepository.findById(Integer.valueOf(authentication))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
 
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
-            throw new RuntimeException("No permission to post new articles");
+            throw new ForbiddenAccessException("No tiene permisos para publicar nuevos artículos");
         }
 
         Map<String, Object> uploadResult = cloudinaryService.uploadVideo(request.getVideo());
-
         String videoUrl = (String) uploadResult.get("secure_url");
 
         Article article = new Article();
@@ -132,26 +134,20 @@ public class ArticleService {
         article.setLocation(request.getLocation());
         article.setVideoUrl(videoUrl);
         article.setIsHidden(false);
-        // article.setArticleId(user.getUserId());
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
 
         if (request.getCategories() != null && !request.getCategories().isEmpty()) {
-
             Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
-
             article.setCategories(categories);
         }
 
-        articleRepository.save(article);
-
-        return new ArticleResponse(article);
+        return new ArticleResponse(articleRepository.save(article));
     }
 
     public List<ArticleResponse> getMyArticles(Authentication auth) {
-
         User user = userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
 
         if (user.getRole() == User.Role.ADMIN) {
             return articleRepository.findAll()
@@ -164,7 +160,7 @@ public class ArticleService {
                     .map(ArticleResponse::new)
                     .collect(Collectors.toList());
         } else {
-            throw new RuntimeException("No permission over any articles");
+            throw new ForbiddenAccessException("No tienes permisos para listar artículos propios");
         }
     }
 
@@ -194,7 +190,7 @@ public class ArticleService {
 
     public List<ArticleResponse> getRelatedArticles(Integer articleId) {
         Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId));
 
         Set<Category> categories = article.getCategories();
 
@@ -226,7 +222,7 @@ public class ArticleService {
 
     public ArticleResponse getArticleById(Integer id) {
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Article not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + id));
 
         return new ArticleResponse(article);
     }
@@ -251,6 +247,6 @@ public class ArticleService {
 
     private User getAuthenticatedUser(Authentication auth) {
         return userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
     }
 }

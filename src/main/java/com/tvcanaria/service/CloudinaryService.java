@@ -8,46 +8,73 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.tvcanaria.entity.Article;
-import com.tvcanaria.repository.ArticleRepository;
-
-import jakarta.transaction.Transactional;
+import com.tvcanaria.exception.ExternalServiceException;
 
 @Service
 public class CloudinaryService {
 
     private final Cloudinary cloudinary;
-    private final ArticleRepository articleRepository;
 
-    public CloudinaryService(Cloudinary cloudinary, ArticleRepository articleRepository) {
+    public CloudinaryService(Cloudinary cloudinary) {
         this.cloudinary = cloudinary;
-        this.articleRepository = articleRepository;
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> uploadVideo(MultipartFile file) throws IOException {
-        return (Map<String, Object>) cloudinary.uploader().upload(
-                file.getBytes(),
-                ObjectUtils.asMap("resource_type", "video"));
+    public Map<String, Object> uploadVideo(MultipartFile file) {
+        try {
+            return (Map<String, Object>) cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap("resource_type", "video"));
+        } catch (IOException e) {
+            throw new ExternalServiceException("Error al subir el archivo a Cloudinary: " + e.getMessage());
+        }
     }
 
-    @Transactional
-    public void deleteVideoFromArticle(Integer id) {
-        Article article = articleRepository.getReferenceById(id);
-
-        if (article.getVideoUrl() == null) {
-            throw new RuntimeException("El artículo no tiene un video asociado en la nube.");
+    /**
+     * Elimina un video de Cloudinary a partir de su URL completa
+     */
+    public void deleteVideoByUrl(String videoUrl) {
+        if (videoUrl == null || videoUrl.trim().isEmpty()) {
+            return;
         }
 
-        try {
-            cloudinary.uploader().destroy(
-                    article.getVideoUrl(),
-                    ObjectUtils.asMap("resource_type", "video"));
+        String publicId = extractPublicIdFromUrl(videoUrl);
 
-            articleRepository.deleteById(id);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Error al conectar con Cloudinary para eliminar el archivo.");
+        if (publicId != null) {
+            try {
+                // Cloudinary necesita el public_id y especificar que es un video
+                cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "video"));
+            } catch (IOException e) {
+                throw new ExternalServiceException("Error al conectar con Cloudinary para eliminar el archivo.");
+            }
         }
+    }
+
+    /**
+     * Extrae el public_id de una URL de Cloudinary.
+     * Ejemplo URL:
+     * https://res.cloudinary.com/demo/video/upload/v1612345/carpeta/mi_video.mp4
+     * Resultado: carpeta/mi_video
+     */
+    private String extractPublicIdFromUrl(String url) {
+        int uploadIndex = url.indexOf("/upload/");
+        if (uploadIndex == -1)
+            return null;
+
+        // Cortamos todo lo que está antes de /upload/
+        String path = url.substring(uploadIndex + 8);
+
+        // Si la URL tiene versión (v1234567/), la saltamos
+        if (path.matches("^v\\d+/.*")) {
+            path = path.substring(path.indexOf("/") + 1);
+        }
+
+        // Quitamos la extensión del archivo (.mp4, .mov, etc)
+        int dotIndex = path.lastIndexOf(".");
+        if (dotIndex != -1) {
+            path = path.substring(0, dotIndex);
+        }
+
+        return path;
     }
 }
