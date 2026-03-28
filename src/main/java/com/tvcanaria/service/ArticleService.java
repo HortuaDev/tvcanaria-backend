@@ -92,6 +92,9 @@ public class ArticleService {
             article.setIsHidden(request.getIsHidden());
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            if (request.getCategoryIds().size() > 5) {
+                throw new RuntimeException("Un artículo no puede tener más de 5 categorías");
+            }
             Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
             article.setCategories(categories);
         }
@@ -138,7 +141,14 @@ public class ArticleService {
         article.setAuthor(user);
 
         if (request.getCategories() != null && !request.getCategories().isEmpty()) {
-            Set<Category> categories = categoryService.getCategoriesByIds(new HashSet<>(request.getCategories()));
+            // usar un set elimina duplicados si el front envia el mismo id dos veces
+            Set<Integer> uniqueCategoryIds = new HashSet<>(request.getCategories());
+
+            if (uniqueCategoryIds.size() > 5) {
+                throw new IllegalArgumentException("No se pueden seleccionar más de 5 categorías.");
+            }
+
+            Set<Category> categories = categoryService.getCategoriesByIds(uniqueCategoryIds);
             article.setCategories(categories);
         }
 
