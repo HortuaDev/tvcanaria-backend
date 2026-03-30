@@ -58,7 +58,7 @@ public class ArticleController {
     }
 
     @PutMapping("/{id}/visibility")
-    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
     public ResponseEntity<ArticleResponse> changeVisibility(
             @PathVariable Integer id,
             @RequestParam Boolean hidden,
@@ -103,9 +103,19 @@ public class ArticleController {
     }
 
     @GetMapping("/my-articles")
-    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
-    public ResponseEntity<List<ArticleResponse>> getMyArticles(Authentication authentication) {
-        List<ArticleResponse> articles = articleService.getMyArticles(authentication);
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
+    public ResponseEntity<Page<ArticleResponse>> getMyArticles(
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            Authentication authentication) {
+
+        Page<ArticleResponse> articles = articleService.getMyArticles(dateFrom, dateTo, categories, page, size, sortBy,
+                order, authentication);
         return ResponseEntity.ok(articles);
     }
 

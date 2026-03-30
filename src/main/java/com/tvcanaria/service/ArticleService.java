@@ -1,6 +1,8 @@
 package com.tvcanaria.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 
 import com.tvcanaria.dto.article.ArticleResponse;
@@ -156,23 +159,56 @@ public class ArticleService {
         return new ArticleResponse(articleRepository.save(article));
     }
 
-    public List<ArticleResponse> getMyArticles(Authentication auth) {
+    public Page<ArticleResponse> getMyArticles(
+            String dateFromStr,
+            String dateToStr,
+            List<String> categories,
+            int page,
+            int size,
+            String sortBy,
+            String order,
+            Authentication auth) {
+
         User user = userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
 
-        if (user.getRole() == User.Role.ADMIN) {
-            return articleRepository.findAll()
-                    .stream()
-                    .map(ArticleResponse::new)
-                    .collect(Collectors.toList());
-        } else if (user.getRole() == User.Role.REPORTER) {
-            return articleRepository.findByAuthorUserId(user.getUserId())
-                    .stream()
-                    .map(ArticleResponse::new)
-                    .collect(Collectors.toList());
-        } else {
+        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
             throw new ForbiddenAccessException("No tienes permisos para listar artículos propios");
         }
+
+        String sortProperty = "createdAt";
+        if ("alphabetical".equals(sortBy)) {
+            sortProperty = "title";
+        } else if ("score".equals(sortBy)) {
+            sortProperty = "rating";
+        }
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
+
+        // 2. PARSEO DE FECHAS
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        // 3. VALIDACIÓN DE CATEGORÍAS
+        List<String> safeCategories = (categories != null && !categories.isEmpty()) ? categories : null;
+        boolean hasCategories = (safeCategories != null);
+
+        // 4. LLAMADA A BASE DE DATOS
+        return articleRepository.findMyArticlesWithFilters(
+                user.getUserId(),
+                user.getRole().name(),
+                dateFrom,
+                dateTo,
+                hasCategories,
+                safeCategories,
+                pageable).map(ArticleResponse::new);
     }
 
     public Page<ArticleResponse> getArticlesByCategory(Integer categoryId, Pageable pageable) {
