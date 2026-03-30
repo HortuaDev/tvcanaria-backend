@@ -20,13 +20,17 @@ import com.tvcanaria.repository.UserBlockRepository;
 import com.tvcanaria.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -99,8 +103,29 @@ public class CommentService {
                 .map(this::mapToCommentResponse);
     }
 
-    public Page<CommentResponse> getReportedComments(Pageable pageable) {
-        return commentRepository.findByOffenseCountGreaterThanEqual(1, pageable)
+    @Transactional(readOnly = true)
+    public Page<CommentResponse> getReportedComments(String dateFromStr, String dateToStr, int page, int size,
+            String sortBy, String order) {
+
+        String sortProperty = "createdAt";
+        if ("alphabetical".equals(sortBy)) {
+            sortProperty = "comment";
+        } else if ("score".equals(sortBy)) {
+            sortProperty = "rating";
+        }
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
                 .map(this::mapToCommentResponse);
     }
 

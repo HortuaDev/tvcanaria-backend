@@ -59,13 +59,21 @@ public class CommentController {
 
     // ---- Obtener los comentarios reportados
     @GetMapping("/reported")
-    public ResponseEntity<Page<CommentResponse>> getReportedComments(Pageable pageable) {
-        Page<CommentResponse> comments = commentService.getReportedComments(pageable);
+    public ResponseEntity<Page<CommentResponse>> getReportedComments(
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String order) {
+
+        Page<CommentResponse> comments = commentService.getReportedComments(dateFrom, dateTo, page, size, sortBy,
+                order);
         return ResponseEntity.ok(comments);
     }
 
     // ---- Aprobar comentario (rechazar reportes)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     @PutMapping("/{commentId}/approve")
     public ResponseEntity<String> approveComment(@PathVariable Integer commentId) {
         commentService.rejectReports(commentId);
@@ -73,7 +81,7 @@ public class CommentController {
     }
 
     // ---- Desaprobar comentario (confirmar reportes)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     @PutMapping("/{commentId}/reject")
     public ResponseEntity<String> rejectComment(@PathVariable Integer commentId) {
         commentService.confirmReports(commentId);
