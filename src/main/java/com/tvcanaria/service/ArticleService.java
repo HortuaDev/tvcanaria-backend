@@ -259,4 +259,11 @@ public class ArticleService {
         return userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
     }
+
+    public List<ArticleResponse> getArticlesByAuthor(Integer authorId) {
+        return articleRepository.findByAuthorUserId(authorId)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
 }
