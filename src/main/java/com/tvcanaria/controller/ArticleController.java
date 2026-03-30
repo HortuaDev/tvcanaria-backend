@@ -2,6 +2,8 @@ package com.tvcanaria.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,19 +81,20 @@ public class ArticleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ArticleResponse>> getAllArticles(
+    public ResponseEntity<Page<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) Boolean onlyVisible) {
+            @RequestParam(required = false) Boolean onlyVisible,
+            Pageable pageable) {
 
         if (categoryId != null) {
-            return ResponseEntity.ok(articleService.getArticlesByCategory(categoryId));
+            return ResponseEntity.ok(articleService.getArticlesByCategory(categoryId, pageable));
         }
 
         if (Boolean.TRUE.equals(onlyVisible)) {
-            return ResponseEntity.ok(articleService.getVisibleArticles());
+            return ResponseEntity.ok(articleService.getVisibleArticles(pageable));
         }
 
-        return ResponseEntity.ok(articleService.getAllArticles());
+        return ResponseEntity.ok(articleService.getAllArticles(pageable));
     }
 
     @GetMapping("/{id}")

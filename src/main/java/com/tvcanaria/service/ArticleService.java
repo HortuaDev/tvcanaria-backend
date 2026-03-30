@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -174,10 +175,9 @@ public class ArticleService {
         }
     }
 
-    public List<ArticleResponse> getArticlesByCategory(Integer categoryId) {
-        return articleRepository.findByCategoriesCategoryId(categoryId).stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
+    public Page<ArticleResponse> getArticlesByCategory(Integer categoryId, Pageable pageable) {
+        return articleRepository.findByCategoriesCategoryId(categoryId, pageable)
+                .map(ArticleResponse::new);
     }
 
     public List<ArticleResponse> getRecentArticlesFromFavoriteCategories(Authentication auth) {
@@ -237,18 +237,14 @@ public class ArticleService {
         return new ArticleResponse(article);
     }
 
-    public List<ArticleResponse> getAllArticles() {
-        return articleRepository.findAll()
-                .stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
+    public Page<ArticleResponse> getAllArticles(Pageable pageable) {
+        return articleRepository.findAll(pageable)
+                .map(ArticleResponse::new);
     }
 
-    public List<ArticleResponse> getVisibleArticles() {
-        return articleRepository.findByIsHiddenFalse()
-                .stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
+    public Page<ArticleResponse> getVisibleArticles(Pageable pageable) {
+        return articleRepository.findByIsHiddenFalse(pageable)
+                .map(ArticleResponse::new);
     }
 
     public List<Article> getArticlesByUserId(Integer userId) {
