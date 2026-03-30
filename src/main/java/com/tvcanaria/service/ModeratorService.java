@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +31,7 @@ public class ModeratorService {
 
     @Transactional
     public void assignReporterToModerator(Integer moderatorId, Integer reporterId) {
+        // ... (Tu código actual de este método se mantiene igual)
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId));
 
@@ -71,12 +73,9 @@ public class ModeratorService {
         if (!userRepository.existsById(moderatorId)) {
             throw new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId);
         }
-
         return moderatorReporterRepository
                 .findAcceptedReportersByModerator(moderatorId, ModeratorReporter.Status.ACCEPTED)
-                .stream()
-                .map(this::mapToUserSummary)
-                .collect(Collectors.toList());
+                .stream().map(this::mapToUserSummary).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -84,50 +83,60 @@ public class ModeratorService {
         if (!userRepository.existsById(reporterId)) {
             throw new ResourceNotFoundException("Reportero no encontrado con ID: " + reporterId);
         }
-
         return moderatorReporterRepository
                 .findAcceptedModeratorsByReporter(reporterId, ModeratorReporter.Status.ACCEPTED)
-                .stream()
-                .map(this::mapToUserSummary)
-                .collect(Collectors.toList());
+                .stream().map(this::mapToUserSummary).collect(Collectors.toList());
     }
 
     @Transactional
     public void sendRequest(ModeratorRequest request, Authentication auth) {
         Integer reporterId = Integer.valueOf(auth.getName());
+        Integer moderatorId = request.getModeratorId();
 
-        moderatorReporterRepository
-                .findByModerator_UserIdAndReporter_UserId(request.getModeratorId(), reporterId)
-                .ifPresent(r -> {
-                    throw new DuplicateResourceException("Ya existe una solicitud previa entre estos usuarios");
-                });
+        if (reporterId.equals(moderatorId)) {
+            throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
+        }
 
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado (reportero) no encontrado"));
 
-        User moderator = userRepository.findById(request.getModeratorId())
+        User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario destino (moderador) no encontrado"));
+
+        Optional<ModeratorReporter> existingRelation = moderatorReporterRepository
+                .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId);
+
+        // MEJORA: Validar estados específicos para evitar bloqueos eternos si fue
+        // rechazada antes.
+        if (existingRelation.isPresent()) {
+            ModeratorReporter relation = existingRelation.get();
+            if (relation.getStatus() == ModeratorReporter.Status.PENDING) {
+                throw new DuplicateResourceException("Ya existe una solicitud pendiente con este usuario.");
+            } else if (relation.getStatus() == ModeratorReporter.Status.ACCEPTED) {
+                throw new DuplicateResourceException("Este usuario ya es tu moderador.");
+            } else if (relation.getStatus() == ModeratorReporter.Status.REJECTED) {
+                // Si estaba rechazada, le damos otra oportunidad y la pasamos a PENDING
+                relation.setStatus(ModeratorReporter.Status.PENDING);
+                moderatorReporterRepository.save(relation);
+                return;
+            }
+        }
 
         ModeratorReporter moderatorReporter = new ModeratorReporter();
         moderatorReporter.setReporter(reporter);
         moderatorReporter.setModerator(moderator);
         moderatorReporter.setStatus(ModeratorReporter.Status.PENDING);
-
         moderatorReporterRepository.save(moderatorReporter);
     }
 
-    // Usuario obtiene sus solicitudes pendientes
     @Transactional(readOnly = true)
     public List<ModeratorResponse> getPendingRequests(Authentication auth) {
         Integer moderatorId = Integer.valueOf(auth.getName());
         return moderatorReporterRepository
                 .findByModerator_UserIdAndStatus(moderatorId, ModeratorReporter.Status.PENDING)
-                .stream()
-                .map(ModeratorResponse::new)
-                .collect(Collectors.toList());
+                .stream().map(ModeratorResponse::new).collect(Collectors.toList());
     }
 
-    // Usuario acepta la solicitud
     @Transactional
     public void acceptRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
@@ -141,7 +150,6 @@ public class ModeratorService {
         request.setStatus(ModeratorReporter.Status.ACCEPTED);
         moderatorReporterRepository.save(request);
 
-        // Cambiar el rol del usuario a MODERATOR
         User moderator = request.getModerator();
         if (moderator.getRole() == User.Role.READER) {
             moderator.setRole(User.Role.MODERATOR);
@@ -149,7 +157,6 @@ public class ModeratorService {
         }
     }
 
-    // Usuario rechaza la solicitud
     @Transactional
     public void rejectRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
@@ -164,19 +171,7 @@ public class ModeratorService {
         moderatorReporterRepository.save(request);
     }
 
-    // ---- Helper ----
-
-    private UserSummaryResponse mapToUserSummary(User user) {
-        UserSummaryResponse response = new UserSummaryResponse();
-        response.setUserId(user.getUserId());
-        response.setUsername(user.getUsername());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setEmail(user.getEmail());
-        response.setRole(user.getRole().name());
-        return response;
-    }
-
+    @Transactional(readOnly = true)
     public boolean isModeratorOf(Integer moderatorId, Integer reporterId) {
         return moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
@@ -188,19 +183,18 @@ public class ModeratorService {
     public List<ModeratorResponse> getMyRequests(Authentication auth) {
         Integer reporterId = Integer.valueOf(auth.getName());
         return moderatorReporterRepository.findByReporter_UserId(reporterId)
-                .stream()
-                .map(ModeratorResponse::new)
-                .collect(Collectors.toList());
+                .stream().map(ModeratorResponse::new).collect(Collectors.toList());
     }
 
-    public UserSummaryResponse searchUserByEmail(String email, Authentication auth) {
-        Integer reporterId = Integer.valueOf(auth.getName());
+    @Transactional(readOnly = true)
+    public UserSummaryResponse searchUser(String query, Authentication auth) {
+        String reporter = auth.getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("No se encontró ningún usuario con el email: " + email));
+        User user = userRepository.findByEmailOrUsername(query, query)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró ningún usuario con el correo o usuario: " + query));
 
-        if (user.getUserId().equals(reporterId)) {
+        if (user.getUsername().equals(reporter)) {
             throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
         }
 
@@ -218,5 +212,17 @@ public class ModeratorService {
         }
 
         moderatorReporterRepository.delete(request);
+    }
+
+    // ---- Helper ----
+    private UserSummaryResponse mapToUserSummary(User user) {
+        UserSummaryResponse response = new UserSummaryResponse();
+        response.setUserId(user.getUserId());
+        response.setUsername(user.getUsername());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole().name());
+        return response;
     }
 }
