@@ -118,4 +118,11 @@ public class ArticleController {
         List<ArticleResponse> results = articleService.searchArticlesByTitle(keyword);
         return ResponseEntity.ok(results);
     }
+
+    @GetMapping("/author/{authorId}")
+    public ResponseEntity<List<ArticleResponse>> getArticlesByAuthor(@PathVariable Integer authorId) {
+        List<ArticleResponse> articles = articleService.getArticlesByAuthor(authorId);
+        return ResponseEntity.ok(articles);
+    }
+
 }

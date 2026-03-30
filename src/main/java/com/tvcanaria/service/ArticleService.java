@@ -253,4 +253,11 @@ public class ArticleService {
         return userRepository.findById(Integer.valueOf(auth.getName()))
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    public List<ArticleResponse> getArticlesByAuthor(Integer authorId) {
+        return articleRepository.findByAuthorUserId(authorId)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
 }
