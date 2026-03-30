@@ -19,9 +19,12 @@ public class ReporterController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ReporterProfileResponse> getReporterChannel(@PathVariable Integer id) {
-        ReporterProfileResponse categories = reporterService.getReporter(id);
-        return ResponseEntity.ok(categories);
-    }
+        ReporterProfileResponse reporter = reporterService.getReporter(id);
+        if (reporter == null) {
+            return ResponseEntity.notFound().build();
+        }
 
+        return ResponseEntity.ok(reporter);
+    }
 
 }
