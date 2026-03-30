@@ -19,6 +19,8 @@ import com.tvcanaria.repository.CommentRepository;
 import com.tvcanaria.repository.UserBlockRepository;
 import com.tvcanaria.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -84,32 +85,23 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponse> getCommentsByArticle(Integer articleId) {
-        // Verificamos si existe antes de buscar sus comentarios
+    public Page<CommentResponse> getCommentsByArticle(Integer articleId, Pageable pageable) {
         if (!articleRepository.existsById(articleId)) {
             throw new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId);
         }
 
-        return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId)
-                .stream()
-                .map(this::mapToCommentResponse)
-                .collect(Collectors.toList());
+        return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId, pageable)
+                .map(this::mapToCommentResponse);
     }
 
-    @Transactional(readOnly = true)
-    public List<CommentResponse> getComments() {
-        return commentRepository.findAll()
-                .stream()
-                .map(this::mapToCommentResponse)
-                .collect(Collectors.toList());
+    public Page<CommentResponse> getComments(Pageable pageable) {
+        return commentRepository.findAll(pageable)
+                .map(this::mapToCommentResponse);
     }
 
-    @Transactional(readOnly = true)
-    public List<CommentResponse> getReportedComments() {
-        return commentRepository.findByOffenseCountGreaterThanEqual(1)
-                .stream()
-                .map(this::mapToCommentResponse)
-                .toList();
+    public Page<CommentResponse> getReportedComments(Pageable pageable) {
+        return commentRepository.findByOffenseCountGreaterThanEqual(1, pageable)
+                .map(this::mapToCommentResponse);
     }
 
     @Transactional
