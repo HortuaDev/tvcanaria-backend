@@ -3,6 +3,9 @@ package com.tvcanaria.service;
 import java.io.IOException;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,6 +16,7 @@ import com.tvcanaria.exception.ExternalServiceException;
 @Service
 public class CloudinaryService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CloudinaryService.class);
     private final Cloudinary cloudinary;
 
     public CloudinaryService(Cloudinary cloudinary) {
@@ -33,6 +37,7 @@ public class CloudinaryService {
     /**
      * Elimina un video de Cloudinary a partir de su URL completa
      */
+    @Async
     public void deleteVideoByUrl(String videoUrl) {
         if (videoUrl == null || videoUrl.trim().isEmpty()) {
             return;
@@ -44,8 +49,12 @@ public class CloudinaryService {
             try {
                 // Cloudinary necesita el public_id y especificar que es un video
                 cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "video"));
+                logger.info("Vídeo eliminado exitosamente de Cloudinary en segundo plano: {}", publicId);
+
             } catch (IOException e) {
-                throw new ExternalServiceException("Error al conectar con Cloudinary para eliminar el archivo.");
+                // Registramos el error en los logs del servidor para revisarlo después,
+                // pero no rompemos la ejecución ni lanzamos excepciones.
+                logger.error("Error asíncrono al intentar eliminar el vídeo en Cloudinary: {}", videoUrl, e);
             }
         }
     }

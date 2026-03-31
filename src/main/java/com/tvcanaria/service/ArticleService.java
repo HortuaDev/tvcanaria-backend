@@ -115,11 +115,15 @@ public class ArticleService {
 
         checkPermission(article, user);
 
-        if (article.getVideoUrl() != null && !article.getVideoUrl().isEmpty()) {
-            cloudinaryService.deleteVideoByUrl(article.getVideoUrl());
-        }
+        String videoUrl = article.getVideoUrl();
 
         articleRepository.delete(article);
+
+        // Disparamos el borrado en Cloudinary (Muy lento, pero como es @Async,
+        // Java lo hace en otro hilo y la transacción de BD termina instantáneamente)
+        if (videoUrl != null && !videoUrl.isEmpty()) {
+            cloudinaryService.deleteVideoByUrl(videoUrl);
+        }
     }
 
     public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, String authentication)
