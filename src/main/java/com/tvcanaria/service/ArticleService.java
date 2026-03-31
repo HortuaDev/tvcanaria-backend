@@ -86,9 +86,9 @@ public class ArticleService {
 
         checkPermission(article, user);
 
-        if (request.getTitle() != null)
+        if (request.getTitle() != null && !request.getTitle().isBlank())
             article.setTitle(request.getTitle());
-        if (request.getLocation() != null)
+        if (request.getLocation() != null && !request.getLocation().isBlank())
             article.setLocation(request.getLocation());
         if (request.getDescription() != null)
             article.setDescription(request.getDescription());
@@ -97,7 +97,7 @@ public class ArticleService {
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             if (request.getCategoryIds().size() > 5) {
-                throw new RuntimeException("Un artículo no puede tener más de 5 categorías");
+                throw new IllegalArgumentException("Un artículo no puede tener más de 5 categorías");
             }
             Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
             article.setCategories(categories);
@@ -126,11 +126,10 @@ public class ArticleService {
         }
     }
 
-    public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, String authentication)
+    public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, Authentication authentication)
             throws Exception {
 
-        User user = userRepository.findById(Integer.valueOf(authentication))
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
+        User user = getAuthenticatedUser(authentication);
 
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
             throw new ForbiddenAccessException("No tiene permisos para publicar nuevos artículos");
@@ -173,8 +172,7 @@ public class ArticleService {
             String order,
             Authentication auth) {
 
-        User user = userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
+        User user = getAuthenticatedUser(auth);
 
         if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
             throw new ForbiddenAccessException("No tienes permisos para listar artículos propios");

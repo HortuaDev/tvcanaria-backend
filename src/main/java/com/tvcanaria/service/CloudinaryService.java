@@ -30,7 +30,7 @@ public class CloudinaryService {
                     file.getBytes(),
                     ObjectUtils.asMap("resource_type", "video"));
         } catch (IOException e) {
-            throw new ExternalServiceException("Error al subir el archivo a Cloudinary: " + e.getMessage());
+            throw new ExternalServiceException("Error al subir el archivo a Cloudinary: Inténtalo de nuevo más tarde.");
         }
     }
 
