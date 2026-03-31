@@ -188,13 +188,13 @@ public class ModeratorService {
 
     @Transactional(readOnly = true)
     public UserSummaryResponse searchUser(String query, Authentication auth) {
-        String reporter = auth.getName();
+        Integer reporterId = Integer.valueOf(auth.getName());
 
         User user = userRepository.findByEmailOrUsername(query, query)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró ningún usuario con el correo o usuario: " + query));
 
-        if (user.getUsername().equals(reporter)) {
+        if (user.getUserId().equals(reporterId)) {
             throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
         }
 
