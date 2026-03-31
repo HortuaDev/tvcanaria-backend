@@ -44,24 +44,163 @@ public class ArticleService {
         this.cloudinaryService = cloudinaryService;
     }
 
-    public boolean isAuthor(Integer articleId, String username) {
+    // ------------------- CREATE ----------------------
+
+    public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, Authentication auth)
+            throws Exception {
+
+        User user = getAuthenticatedUser(auth);
+
+        Map<String, Object> uploadResult = cloudinaryService.uploadVideo(request.getVideo());
+        String videoUrl = (String) uploadResult.get("secure_url");
+
+        Article article = new Article();
+        article.setTitle(request.getTitle());
+        article.setDescription(request.getDescription());
+        article.setLocation(request.getLocation());
+        article.setVideoUrl(videoUrl);
+        article.setIsHidden(false);
+        article.setCreatedAt(LocalDateTime.now());
+        article.setAuthor(user);
+
+        if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+            Set<Integer> uniqueCategoryIds = new HashSet<>(request.getCategories());
+
+            if (uniqueCategoryIds.size() > 5) {
+                throw new IllegalArgumentException("No se pueden seleccionar más de 5 categorías.");
+            }
+
+            Set<Category> categories = categoryService.getCategoriesByIds(uniqueCategoryIds);
+            article.setCategories(categories);
+        }
+
+        return new ArticleResponse(articleRepository.save(article));
+    }
+
+    // ------------------- READ ----------------------
+
+    public Page<ArticleResponse> getAllArticles(Pageable pageable) {
+        return articleRepository.findAll(pageable)
+                .map(ArticleResponse::new);
+    }
+
+    public ArticleResponse getArticleById(Integer id) {
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + id));
+
+        return new ArticleResponse(article);
+    }
+
+    public Page<ArticleResponse> getVisibleArticles(Pageable pageable) {
+        return articleRepository.findByIsHiddenFalse(pageable)
+                .map(ArticleResponse::new);
+    }
+
+    public Page<ArticleResponse> getArticlesByCategory(Integer categoryId, Pageable pageable) {
+        return articleRepository.findByCategoriesCategoryId(categoryId, pageable)
+                .map(ArticleResponse::new);
+    }
+
+    public List<ArticleResponse> getArticlesByAuthor(Integer authorId) {
+        return articleRepository.findByAuthorUserId(authorId)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public Page<ArticleResponse> getMyArticles(
+            String dateFromStr,
+            String dateToStr,
+            List<String> categories,
+            int page,
+            int size,
+            String sortBy,
+            String order,
+            Authentication auth) {
+
+        User user = getAuthenticatedUser(auth);
+
+        String sortProperty = "createdAt";
+        if ("alphabetical".equals(sortBy)) {
+            sortProperty = "title";
+        } else if ("score".equals(sortBy)) {
+            sortProperty = "rating";
+        }
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        List<String> safeCategories = (categories != null && !categories.isEmpty()) ? categories : null;
+        boolean hasCategories = (safeCategories != null);
+
+        return articleRepository.findMyArticlesWithFilters(
+                user.getUserId(),
+                user.getRole().name(),
+                dateFrom,
+                dateTo,
+                hasCategories,
+                safeCategories,
+                pageable).map(ArticleResponse::new);
+    }
+
+    public List<ArticleResponse> getRecentArticlesFromFavoriteCategories(Authentication auth) {
+        User user = getAuthenticatedUser(auth);
+        Set<Category> favoriteCategories = user.getCategories();
+
+        if (favoriteCategories == null || favoriteCategories.isEmpty()) {
+            return articleRepository.findTop20ByIsHiddenFalseOrderByCreatedAtDesc()
+                    .stream()
+                    .map(ArticleResponse::new)
+                    .collect(Collectors.toList());
+        }
+
+        return articleRepository.findTop20DistinctByCategoriesInAndIsHiddenFalseOrderByCreatedAtDesc(favoriteCategories)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ArticleResponse> getRelatedArticles(Integer articleId) {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId));
-        return article.getAuthor().getUsername().equals(username);
+
+        Set<Category> categories = article.getCategories();
+        Pageable topTen = PageRequest.of(0, 10);
+
+        if (categories == null || categories.isEmpty()) {
+            return articleRepository.findFallbackRelatedArticles(articleId, topTen)
+                    .stream()
+                    .map(ArticleResponse::new)
+                    .collect(Collectors.toList());
+        }
+
+        return articleRepository.findRelatedArticles(categories, articleId, topTen)
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
     }
 
-    private void checkPermission(Article article, User user) {
-        boolean isAdmin = user.getRole() == User.Role.ADMIN;
-        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
+    public List<ArticleResponse> searchArticlesByTitle(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
 
-        if (isAdmin)
-            return;
-
-        if (user.getRole() == User.Role.REPORTER && isAuthor)
-            return;
-
-        throw new ForbiddenAccessException("No tiene permisos para modificar o eliminar este artículo");
+        return articleRepository.searchVisibleArticlesByTitle(keyword.trim())
+                .stream()
+                .map(ArticleResponse::new)
+                .collect(Collectors.toList());
     }
+
+    // ------------------- EDIT ----------------------
 
     @Transactional
     public ArticleResponse changeVisibility(Integer id, Boolean hidden, Authentication auth) {
@@ -106,6 +245,8 @@ public class ArticleService {
         return new ArticleResponse(articleRepository.save(article));
     }
 
+    // ------------------- DELETE ----------------------
+
     @Transactional
     public void deleteArticle(Integer id, Authentication auth) {
         User user = getAuthenticatedUser(auth);
@@ -119,187 +260,34 @@ public class ArticleService {
 
         articleRepository.delete(article);
 
-        // Disparamos el borrado en Cloudinary (Muy lento, pero como es @Async,
-        // Java lo hace en otro hilo y la transacción de BD termina instantáneamente)
+        // Disparamos el borrado en Cloudinary de forma asíncrona
         if (videoUrl != null && !videoUrl.isEmpty()) {
             cloudinaryService.deleteVideoByUrl(videoUrl);
         }
     }
 
-    public ArticleResponse createArticleWithVideo(ArticleUploadRequest request, String authentication)
-            throws Exception {
+    // ------------------- HELPERS ----------------------
 
-        User user = userRepository.findById(Integer.valueOf(authentication))
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
-
-        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
-            throw new ForbiddenAccessException("No tiene permisos para publicar nuevos artículos");
-        }
-
-        Map<String, Object> uploadResult = cloudinaryService.uploadVideo(request.getVideo());
-        String videoUrl = (String) uploadResult.get("secure_url");
-
-        Article article = new Article();
-        article.setTitle(request.getTitle());
-        article.setDescription(request.getDescription());
-        article.setLocation(request.getLocation());
-        article.setVideoUrl(videoUrl);
-        article.setIsHidden(false);
-        article.setCreatedAt(LocalDateTime.now());
-        article.setAuthor(user);
-
-        if (request.getCategories() != null && !request.getCategories().isEmpty()) {
-            // usar un set elimina duplicados si el front envia el mismo id dos veces
-            Set<Integer> uniqueCategoryIds = new HashSet<>(request.getCategories());
-
-            if (uniqueCategoryIds.size() > 5) {
-                throw new IllegalArgumentException("No se pueden seleccionar más de 5 categorías.");
-            }
-
-            Set<Category> categories = categoryService.getCategoriesByIds(uniqueCategoryIds);
-            article.setCategories(categories);
-        }
-
-        return new ArticleResponse(articleRepository.save(article));
-    }
-
-    public Page<ArticleResponse> getMyArticles(
-            String dateFromStr,
-            String dateToStr,
-            List<String> categories,
-            int page,
-            int size,
-            String sortBy,
-            String order,
-            Authentication auth) {
-
-        User user = userRepository.findById(Integer.valueOf(auth.getName()))
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
-
-        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.REPORTER) {
-            throw new ForbiddenAccessException("No tienes permisos para listar artículos propios");
-        }
-
-        String sortProperty = "createdAt";
-        if ("alphabetical".equals(sortBy)) {
-            sortProperty = "title";
-        } else if ("score".equals(sortBy)) {
-            sortProperty = "rating";
-        }
-
-        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
-
-        // 2. PARSEO DE FECHAS
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
-                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
-                : null;
-
-        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
-                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
-                : null;
-
-        // 3. VALIDACIÓN DE CATEGORÍAS
-        List<String> safeCategories = (categories != null && !categories.isEmpty()) ? categories : null;
-        boolean hasCategories = (safeCategories != null);
-
-        // 4. LLAMADA A BASE DE DATOS
-        return articleRepository.findMyArticlesWithFilters(
-                user.getUserId(),
-                user.getRole().name(),
-                dateFrom,
-                dateTo,
-                hasCategories,
-                safeCategories,
-                pageable).map(ArticleResponse::new);
-    }
-
-    public Page<ArticleResponse> getArticlesByCategory(Integer categoryId, Pageable pageable) {
-        return articleRepository.findByCategoriesCategoryId(categoryId, pageable)
-                .map(ArticleResponse::new);
-    }
-
-    public List<ArticleResponse> getRecentArticlesFromFavoriteCategories(Authentication auth) {
-        User user = getAuthenticatedUser(auth);
-
-        Set<Category> favoriteCategories = user.getCategories();
-
-        if (favoriteCategories == null || favoriteCategories.isEmpty()) {
-            return articleRepository.findTop20ByIsHiddenFalseOrderByCreatedAtDesc()
-                    .stream()
-                    .map(ArticleResponse::new)
-                    .collect(Collectors.toList());
-        }
-
-        return articleRepository.findTop20DistinctByCategoriesInAndIsHiddenFalseOrderByCreatedAtDesc(favoriteCategories)
-                .stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
-    }
-
-    public List<ArticleResponse> getRelatedArticles(Integer articleId) {
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId));
-
-        Set<Category> categories = article.getCategories();
-
-        Pageable topTen = PageRequest.of(0, 10);
-
-        if (categories == null || categories.isEmpty()) {
-            return articleRepository.findFallbackRelatedArticles(articleId, topTen)
-                    .stream()
-                    .map(ArticleResponse::new)
-                    .collect(Collectors.toList());
-        }
-
-        return articleRepository.findRelatedArticles(categories, articleId, topTen)
-                .stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
-    }
-
-    public List<ArticleResponse> searchArticlesByTitle(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return List.of();
-        }
-
-        return articleRepository.searchVisibleArticlesByTitle(keyword.trim())
-                .stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
-    }
-
-    public ArticleResponse getArticleById(Integer id) {
-        Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Artículo no encontrado con ID: " + id));
-
-        return new ArticleResponse(article);
-    }
-
-    public Page<ArticleResponse> getAllArticles(Pageable pageable) {
-        return articleRepository.findAll(pageable)
-                .map(ArticleResponse::new);
-    }
-
-    public Page<ArticleResponse> getVisibleArticles(Pageable pageable) {
-        return articleRepository.findByIsHiddenFalse(pageable)
-                .map(ArticleResponse::new);
-    }
-
-    public List<Article> getArticlesByUserId(Integer userId) {
-        return articleRepository.findByAuthorUserId(userId);
+    private Integer getAuthenticatedUserId(Authentication auth) {
+        return Integer.valueOf(auth.getName());
     }
 
     private User getAuthenticatedUser(Authentication auth) {
-        return userRepository.findById(Integer.valueOf(auth.getName()))
+        return userRepository.findById(getAuthenticatedUserId(auth))
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
     }
 
-    public List<ArticleResponse> getArticlesByAuthor(Integer authorId) {
-        return articleRepository.findByAuthorUserId(authorId)
-                .stream()
-                .map(ArticleResponse::new)
-                .collect(Collectors.toList());
+    private void checkPermission(Article article, User user) {
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
+
+        if (isAdmin)
+            return;
+
+        if (user.getRole() == User.Role.REPORTER && isAuthor)
+            return;
+
+        throw new ForbiddenAccessException("No tiene permisos para modificar o eliminar este artículo");
     }
+
 }

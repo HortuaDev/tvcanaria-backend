@@ -37,50 +37,23 @@ public class ArticleController {
         this.articleService = articleService;
     }
 
+    // ------------------- POST ----------------------
+
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
     public ResponseEntity<ArticleResponse> uploadArticle(
             @Valid @ModelAttribute ArticleUploadRequest request,
             Authentication authentication) throws Exception {
 
-        ArticleResponse article = articleService.createArticleWithVideo(request, authentication.getName());
+        ArticleResponse article = articleService.createArticleWithVideo(request, authentication);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ArticleResponse> updateArticle(
-            @PathVariable Integer id,
-            @Valid @RequestBody ArticleUpdateRequest request,
-            Authentication authentication) {
-
-        ArticleResponse updated = articleService.updateArticle(id, request, authentication);
-        return ResponseEntity.ok(updated);
-    }
-
-    @PutMapping("/{id}/visibility")
-    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
-    public ResponseEntity<ArticleResponse> changeVisibility(
-            @PathVariable Integer id,
-            @RequestParam Boolean hidden,
-            Authentication authentication) {
-
-        ArticleResponse updated = articleService.changeVisibility(id, hidden, authentication);
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Integer id, Authentication authentication) {
-        articleService.deleteArticle(id, authentication);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}/related")
-    public ResponseEntity<List<ArticleResponse>> getRelatedArticles(@PathVariable Integer id) {
-        List<ArticleResponse> relatedArticles = articleService.getRelatedArticles(id);
-        return ResponseEntity.ok(relatedArticles);
-    }
+    // ------------------- GET ----------------------
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) Boolean onlyVisible,
@@ -100,6 +73,12 @@ public class ArticleController {
     @GetMapping("/{id}")
     public ResponseEntity<ArticleResponse> getArticleById(@PathVariable Integer id) {
         return ResponseEntity.ok(articleService.getArticleById(id));
+    }
+
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<ArticleResponse>> getRelatedArticles(@PathVariable Integer id) {
+        List<ArticleResponse> relatedArticles = articleService.getRelatedArticles(id);
+        return ResponseEntity.ok(relatedArticles);
     }
 
     @GetMapping("/my-articles")
@@ -136,6 +115,39 @@ public class ArticleController {
     public ResponseEntity<List<ArticleResponse>> getArticlesByAuthor(@PathVariable Integer authorId) {
         List<ArticleResponse> articles = articleService.getArticlesByAuthor(authorId);
         return ResponseEntity.ok(articles);
+    }
+
+    // ------------------- PUT ----------------------
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
+    public ResponseEntity<ArticleResponse> updateArticle(
+            @PathVariable Integer id,
+            @Valid @RequestBody ArticleUpdateRequest request,
+            Authentication authentication) {
+
+        ArticleResponse updated = articleService.updateArticle(id, request, authentication);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/{id}/visibility")
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
+    public ResponseEntity<ArticleResponse> changeVisibility(
+            @PathVariable Integer id,
+            @RequestParam Boolean hidden,
+            Authentication authentication) {
+
+        ArticleResponse updated = articleService.changeVisibility(id, hidden, authentication);
+        return ResponseEntity.ok(updated);
+    }
+
+    // ------------------- DELETE ----------------------
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
+    public ResponseEntity<Void> deleteArticle(@PathVariable Integer id, Authentication authentication) {
+        articleService.deleteArticle(id, authentication);
+        return ResponseEntity.noContent().build();
     }
 
 }
