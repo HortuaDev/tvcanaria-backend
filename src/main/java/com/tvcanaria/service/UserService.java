@@ -3,6 +3,7 @@ package com.tvcanaria.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -90,6 +91,7 @@ public class UserService {
         User user = findUserById(userId);
         Set<Category> categories = categoryService.getCategoriesByIds(categoryIds);
         user.setCategories(categories);
+        userRepository.save(user);
 
         return categories.stream().map(CategoryResponse::new).collect(Collectors.toSet());
     }
@@ -104,6 +106,7 @@ public class UserService {
             UserBlock block = new UserBlock();
             block.setUser(user);
             block.setReason(reason != null ? reason : "Desactivación indefinida por administrador");
+            block.setBlockedUntil(null);
 
             userBlockRepository.save(block);
             user.setUserBlock(block);
@@ -173,13 +176,22 @@ public class UserService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
-                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
-                : null;
+        LocalDateTime dateFrom = null;
+        LocalDateTime dateTo = null;
 
-        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
-                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
-                : null;
+        try {
+            if (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                dateFrom = LocalDate.parse(dateFromStr, formatter).atStartOfDay();
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException("Formato de fecha inválido en 'dateFrom'. Use el formato yyyy-MM-dd");
+        }
+
+        try {
+            if (dateToStr != null && !dateToStr.trim().isEmpty())
+                dateTo = LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59);
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException("Formato de fecha inválido en 'dateTo'. Use el formato yyyy-MM-dd");
+        }
 
         return userRepository.searchAndFilterUsers(query, dateFrom, dateTo, pageable)
                 .map(UserProfileResponse::new);
