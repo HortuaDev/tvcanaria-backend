@@ -1,8 +1,8 @@
 package com.tvcanaria.controller;
 
-import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -37,15 +37,16 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<UserProfileResponse>> getUsers(
+    public ResponseEntity<Page<UserProfileResponse>> getUsers(
             @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
             @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
             @RequestParam(value = "dateFrom", required = false) String dateFrom,
-            @RequestParam(value = "dateTo", required = false) String dateTo) {
+            @RequestParam(value = "dateTo", required = false) String dateTo,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
 
-        // Ahora le pasamos todos los parámetros al servicio, incluso si son null
-        return ResponseEntity.ok(userService.searchUsers(search, sortBy, order, dateFrom, dateTo));
+        return ResponseEntity.ok(userService.searchUsers(search, sortBy, order, dateFrom, dateTo, page, size));
     }
 
     @GetMapping("/profile")

@@ -2,6 +2,8 @@ package com.tvcanaria.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,7 +58,7 @@ public class ArticleController {
     }
 
     @PutMapping("/{id}/visibility")
-    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
     public ResponseEntity<ArticleResponse> changeVisibility(
             @PathVariable Integer id,
             @RequestParam Boolean hidden,
@@ -79,19 +81,20 @@ public class ArticleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ArticleResponse>> getAllArticles(
+    public ResponseEntity<Page<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) Boolean onlyVisible) {
+            @RequestParam(required = false) Boolean onlyVisible,
+            Pageable pageable) {
 
         if (categoryId != null) {
-            return ResponseEntity.ok(articleService.getArticlesByCategory(categoryId));
+            return ResponseEntity.ok(articleService.getArticlesByCategory(categoryId, pageable));
         }
 
         if (Boolean.TRUE.equals(onlyVisible)) {
-            return ResponseEntity.ok(articleService.getVisibleArticles());
+            return ResponseEntity.ok(articleService.getVisibleArticles(pageable));
         }
 
-        return ResponseEntity.ok(articleService.getAllArticles());
+        return ResponseEntity.ok(articleService.getAllArticles(pageable));
     }
 
     @GetMapping("/{id}")
@@ -100,9 +103,19 @@ public class ArticleController {
     }
 
     @GetMapping("/my-articles")
-    @PreAuthorize("hasAnyRole('ADMIN','REPORTER')")
-    public ResponseEntity<List<ArticleResponse>> getMyArticles(Authentication authentication) {
-        List<ArticleResponse> articles = articleService.getMyArticles(authentication);
+    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
+    public ResponseEntity<Page<ArticleResponse>> getMyArticles(
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String order,
+            Authentication authentication) {
+
+        Page<ArticleResponse> articles = articleService.getMyArticles(dateFrom, dateTo, categories, page, size, sortBy,
+                order, authentication);
         return ResponseEntity.ok(articles);
     }
 

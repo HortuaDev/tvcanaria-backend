@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -159,12 +162,14 @@ public class UserService {
         return new UserProfileResponse(userRepository.save(user));
     }
 
-    public List<UserProfileResponse> searchUsers(String query, String sortBy, String order, String dateFromStr,
-            String dateToStr) {
+    public Page<UserProfileResponse> searchUsers(String query, String sortBy, String order, String dateFromStr,
+            String dateToStr, int page, int size) {
 
         String sortProperty = "alphabetical".equals(sortBy) ? "username" : "createdAt";
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortProperty);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -176,13 +181,12 @@ public class UserService {
                 ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
                 : null;
 
-        return userRepository.searchAndFilterUsers(query, dateFrom, dateTo, sort)
-                .stream()
-                .map(UserProfileResponse::new)
-                .collect(Collectors.toList());
+        return userRepository.searchAndFilterUsers(query, dateFrom, dateTo, pageable)
+                .map(UserProfileResponse::new);
     }
 
     private User findUserById(Integer id) {
-        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
     }
 }

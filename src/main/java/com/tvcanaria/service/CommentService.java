@@ -19,14 +19,19 @@ import com.tvcanaria.repository.CommentRepository;
 import com.tvcanaria.repository.UserBlockRepository;
 import com.tvcanaria.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -84,32 +89,44 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponse> getCommentsByArticle(Integer articleId) {
-        // Verificamos si existe antes de buscar sus comentarios
+    public Page<CommentResponse> getCommentsByArticle(Integer articleId, Pageable pageable) {
         if (!articleRepository.existsById(articleId)) {
             throw new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId);
         }
 
-        return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId)
-                .stream()
-                .map(this::mapToCommentResponse)
-                .collect(Collectors.toList());
+        return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId, pageable)
+                .map(this::mapToCommentResponse);
+    }
+
+    public Page<CommentResponse> getComments(Pageable pageable) {
+        return commentRepository.findAll(pageable)
+                .map(this::mapToCommentResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponse> getComments() {
-        return commentRepository.findAll()
-                .stream()
-                .map(this::mapToCommentResponse)
-                .collect(Collectors.toList());
-    }
+    public Page<CommentResponse> getReportedComments(String dateFromStr, String dateToStr, int page, int size,
+            String sortBy, String order) {
 
-    @Transactional(readOnly = true)
-    public List<CommentResponse> getReportedComments() {
-        return commentRepository.findByOffenseCountGreaterThanEqual(1)
-                .stream()
-                .map(this::mapToCommentResponse)
-                .toList();
+        String sortProperty = "createdAt";
+        if ("alphabetical".equals(sortBy)) {
+            sortProperty = "comment";
+        } else if ("score".equals(sortBy)) {
+            sortProperty = "rating";
+        }
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
+                .map(this::mapToCommentResponse);
     }
 
     @Transactional

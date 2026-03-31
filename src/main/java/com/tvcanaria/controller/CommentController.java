@@ -5,12 +5,12 @@ import com.tvcanaria.dto.comment.CommentResponse;
 import com.tvcanaria.service.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -42,27 +42,38 @@ public class CommentController {
 
     // ---- Obtener comentarios de un vídeo
     @GetMapping("/article/{articleId}")
-    public ResponseEntity<List<CommentResponse>> getCommentsByArticle(@PathVariable Integer articleId) {
-        List<CommentResponse> comments = commentService.getCommentsByArticle(articleId);
+    public ResponseEntity<Page<CommentResponse>> getCommentsByArticle(
+            @PathVariable Integer articleId,
+            Pageable pageable) {
+
+        Page<CommentResponse> comments = commentService.getCommentsByArticle(articleId, pageable);
         return ResponseEntity.ok(comments);
     }
 
     // ---- Obtener todos los comentarios
     @GetMapping
-    public ResponseEntity<List<CommentResponse>> getAllComments() {
-        List<CommentResponse> comments = commentService.getComments();
+    public ResponseEntity<Page<CommentResponse>> getAllComments(Pageable pageable) {
+        Page<CommentResponse> comments = commentService.getComments(pageable);
         return ResponseEntity.ok(comments);
     }
-    
+
     // ---- Obtener los comentarios reportados
     @GetMapping("/reported")
-    public ResponseEntity<List<CommentResponse>> getReportedComments() {
-        List<CommentResponse> comments = commentService.getReportedComments();
+    public ResponseEntity<Page<CommentResponse>> getReportedComments(
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String order) {
+
+        Page<CommentResponse> comments = commentService.getReportedComments(dateFrom, dateTo, page, size, sortBy,
+                order);
         return ResponseEntity.ok(comments);
     }
-    
+
     // ---- Aprobar comentario (rechazar reportes)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     @PutMapping("/{commentId}/approve")
     public ResponseEntity<String> approveComment(@PathVariable Integer commentId) {
         commentService.rejectReports(commentId);
@@ -70,7 +81,7 @@ public class CommentController {
     }
 
     // ---- Desaprobar comentario (confirmar reportes)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     @PutMapping("/{commentId}/reject")
     public ResponseEntity<String> rejectComment(@PathVariable Integer commentId) {
         commentService.confirmReports(commentId);
