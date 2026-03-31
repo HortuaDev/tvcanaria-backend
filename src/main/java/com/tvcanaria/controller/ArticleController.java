@@ -42,7 +42,7 @@ public class ArticleController {
             @Valid @ModelAttribute ArticleUploadRequest request,
             Authentication authentication) throws Exception {
 
-        ArticleResponse article = articleService.createArticleWithVideo(request, authentication.getName());
+        ArticleResponse article = articleService.createArticleWithVideo(request, authentication);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(article);
     }
