@@ -1,5 +1,6 @@
 package com.tvcanaria.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,16 +15,14 @@ import com.tvcanaria.security.JwtTokenProvider;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private UserRepository userRepository;
 
-    public AuthService(UserRepository userRepository, JwtTokenProvider jwtTokenProvider,
-            CategoryService categoryService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {

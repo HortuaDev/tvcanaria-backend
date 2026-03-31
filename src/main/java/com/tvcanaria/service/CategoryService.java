@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tvcanaria.dto.category.CategoryResponse;
@@ -15,11 +16,8 @@ import com.tvcanaria.repository.CategoryRepository;
 @Service
 public class CategoryService {
 
-    private final CategoryRepository categoryRepository;
-
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     // Obtener todas las categorías
     public List<CategoryResponse> getAllCategories() {

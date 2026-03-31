@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,18 +32,17 @@ import com.tvcanaria.repository.UserRepository;
 @Service
 public class ArticleService {
 
-    private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
-    private final CategoryService categoryService;
-    private final CloudinaryService cloudinaryService;
+    @Autowired
+    private ArticleRepository articleRepository;
 
-    public ArticleService(ArticleRepository articleRepository, CategoryService categoryService,
-            UserRepository userRepository, CloudinaryService cloudinaryService) {
-        this.articleRepository = articleRepository;
-        this.categoryService = categoryService;
-        this.userRepository = userRepository;
-        this.cloudinaryService = cloudinaryService;
-    }
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // ------------------- CREATE ----------------------
 

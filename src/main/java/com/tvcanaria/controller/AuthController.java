@@ -2,6 +2,7 @@ package com.tvcanaria.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.tvcanaria.dto.auth.AuthResponse;
@@ -15,13 +16,11 @@ import com.tvcanaria.service.OAuth2Service;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
-    private final OAuth2Service oAuth2Service;
+    @Autowired
+    private AuthService authService;
 
-    public AuthController(AuthService authService, OAuth2Service oAuth2Service) {
-        this.authService = authService;
-        this.oAuth2Service = oAuth2Service;
-    }
+    @Autowired
+    private OAuth2Service oAuth2Service;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,18 +36,17 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final CategoryService categoryService;
-    private final UserBlockRepository userBlockRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
-    public UserService(UserRepository userRepository, CategoryService categoryService,
-            UserBlockRepository userBlockRepository) {
-        this.userRepository = userRepository;
-        this.categoryService = categoryService;
-        this.userBlockRepository = userBlockRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
-    }
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private UserBlockRepository userBlockRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     // ------------------- PERFIL Y USUARIO AUTENTICADO ----------------------
 

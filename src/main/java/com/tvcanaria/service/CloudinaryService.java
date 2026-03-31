@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,11 +18,9 @@ import com.tvcanaria.exception.ExternalServiceException;
 public class CloudinaryService {
 
     private static final Logger logger = LoggerFactory.getLogger(CloudinaryService.class);
-    private final Cloudinary cloudinary;
 
-    public CloudinaryService(Cloudinary cloudinary) {
-        this.cloudinary = cloudinary;
-    }
+    @Autowired
+    private Cloudinary cloudinary;
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> uploadVideo(MultipartFile file) {
