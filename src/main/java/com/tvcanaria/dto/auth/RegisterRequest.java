@@ -14,7 +14,6 @@ public class RegisterRequest {
 
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 50)
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$", message = "La contraseña debe contener al menos una mayúscula, una minúscula y un número")
     private String firstName;
 
     @NotBlank(message = "El apellido es obligatorio")
@@ -27,6 +26,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$", message = "La contraseña debe contener al menos una mayúscula, una minúscula y un número")
     private String password;
 
     // Getters y setters
