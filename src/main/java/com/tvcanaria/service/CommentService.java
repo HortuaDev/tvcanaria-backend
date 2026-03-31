@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,18 +50,13 @@ public class CommentService {
     @Autowired
     private UserBlockRepository userBlockRepository;
 
-    // ---- Crear comentario
+    // ------------------- CREATE / REPORT ----------------------
+
     @Transactional
-    public CommentResponse createComment(CommentRequest commentRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer userId = Integer.parseInt(authentication.getName());
+    public CommentResponse createComment(CommentRequest commentRequest, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
-
-        // Verificar si el usuario está bloqueado temporalmente
-        if (user.getUserBlock() != null &&
-                user.getUserBlock().getBlockedUntil().isAfter(LocalDateTime.now())) {
+        if (user.getUserBlock() != null && user.getUserBlock().getBlockedUntil().isAfter(LocalDateTime.now())) {
             throw new AccountDisabledException("Tu cuenta está bloqueada temporalmente hasta: "
                     + user.getUserBlock().getBlockedUntil());
         }
@@ -81,12 +75,36 @@ public class CommentService {
 
         Comment savedComment = commentRepository.save(comment);
 
-        // Actualizar la puntuación media del artículo
         article.setRating(articleRepository.calculateAverageByArticleId(article.getArticleId()));
         articleRepository.save(article);
 
         return mapToCommentResponse(savedComment);
     }
+
+    @Transactional
+    public void reportComment(Integer commentId, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
+
+        if (commentReportRepository.existsByComment_CommentIdAndReporter_UserId(commentId, user.getUserId())) {
+            throw new DuplicateResourceException("Ya has reportado este comentario anteriormente");
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
+
+        CommentReport report = new CommentReport();
+        report.setComment(comment);
+        report.setReporter(user);
+        report.setReviewed(false);
+        report.setValidReport(false);
+
+        commentReportRepository.save(report);
+
+        comment.setOffenseCount(comment.getOffenseCount() + 1);
+        commentRepository.save(comment);
+    }
+
+    // ------------------- READ ----------------------
 
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsByArticle(Integer articleId, Pageable pageable) {
@@ -129,80 +147,16 @@ public class CommentService {
                 .map(this::mapToCommentResponse);
     }
 
-    @Transactional
-    public void reportComment(Integer commentId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer userId = Integer.parseInt(authentication.getName());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
-
-        if (commentReportRepository.existsByComment_CommentIdAndReporter_UserId(commentId, user.getUserId())) {
-            throw new DuplicateResourceException("Ya has reportado este comentario anteriormente");
-        }
-
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
-
-        CommentReport report = new CommentReport();
-        report.setComment(comment);
-        report.setReporter(user);
-        report.setReviewed(false);
-        report.setValidReport(false);
-
-        commentReportRepository.save(report);
-
-        comment.setOffenseCount(comment.getOffenseCount() + 1);
-        commentRepository.save(comment);
-    }
+    // ------------------- MODERATE / DELETE ----------------------
 
     @Transactional
-    public void deleteComment(Integer commentId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer userId = Integer.parseInt(authentication.getName());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
+    public void confirmReports(Integer commentId, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
-
-        boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
-
-        boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
-                .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
-                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
-
-        boolean hasEnoughReports = comment.getOffenseCount() >= 5;
-
-        // Se puede eliminar si es Admin, o si es Reporter/Moderador pero SOLAMENTE si
-        // tiene 5+ reportes
-        if (isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
-            commentReportRepository.deleteByComment_CommentId(commentId);
-            commentRepository.delete(comment);
-            return;
-        }
-
-        throw new ForbiddenAccessException("No tienes los permisos necesarios para eliminar este comentario");
-    }
-
-    // --- Confirmar reportes (moderador decide castigar)
-    @Transactional
-    public void confirmReports(Integer commentId) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer userId = Integer.parseInt(authentication.getName());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
-
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
-
-        boolean isAdmin = user.getRole() == User.Role.ADMIN;
-
         boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
                 .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
                         && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
@@ -215,52 +169,35 @@ public class CommentService {
             throw new BadRequestException("El comentario debe tener al menos 5 reportes para poder ser sancionado");
         }
 
-        List<CommentReport> reports = commentReportRepository
-                .findByComment_CommentId(commentId);
-
+        List<CommentReport> reports = commentReportRepository.findByComment_CommentId(commentId);
         for (CommentReport report : reports) {
             report.setReviewed(true);
             report.setValidReport(true);
         }
-
         commentReportRepository.saveAll(reports);
 
         User offender = comment.getUser();
         int strikes = countUserStrikes(offender);
-        LocalDateTime blockUntil;
-
-        if (strikes >= 2) {
-            blockUntil = LocalDateTime.now().plusWeeks(1);
-        } else {
-            blockUntil = LocalDateTime.now().plusDays(1);
-        }
+        LocalDateTime blockUntil = (strikes >= 2) ? LocalDateTime.now().plusWeeks(1) : LocalDateTime.now().plusDays(1);
 
         UserBlock block = new UserBlock();
         block.setUser(offender);
         block.setReason("Comentario inapropiado - Violación de normas verificada");
         block.setBlockedUntil(blockUntil);
-
         userBlockRepository.save(block);
 
         commentReportRepository.deleteByComment_CommentId(commentId);
         commentRepository.delete(comment);
     }
 
-    // ---- Rechazar reportes a un comentario
     @Transactional
-    public void rejectReports(Integer commentId) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer userId = Integer.parseInt(authentication.getName());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
+    public void rejectReports(Integer commentId, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
-
         boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
                 .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
                         && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
@@ -269,18 +206,46 @@ public class CommentService {
             throw new ForbiddenAccessException("No tienes permisos para moderar los comentarios de este artículo");
         }
 
-        List<CommentReport> reports = commentReportRepository
-                .findByComment_CommentId(commentId);
-
+        List<CommentReport> reports = commentReportRepository.findByComment_CommentId(commentId);
         for (CommentReport report : reports) {
             report.setReviewed(true);
             report.setValidReport(false);
         }
-
         commentReportRepository.saveAll(reports);
 
-        comment.setOffenseCount(0); // Limpiamos el historial de reportes
+        comment.setOffenseCount(0);
         commentRepository.save(comment);
+    }
+
+    @Transactional
+    public void deleteComment(Integer commentId, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
+
+        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
+        boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
+                .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
+                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
+        boolean hasEnoughReports = comment.getOffenseCount() >= 5;
+
+        if (isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
+            commentReportRepository.deleteByComment_CommentId(commentId);
+            commentRepository.delete(comment);
+            return;
+        }
+
+        throw new ForbiddenAccessException("No tienes los permisos necesarios para eliminar este comentario");
+    }
+
+    // ------------------- HELPERS ----------------------
+
+    private User getAuthenticatedUser(Authentication auth) {
+        Integer userId = Integer.valueOf(auth.getName());
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
     }
 
     public int countUserStrikes(User user) {

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,46 +20,42 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
-    // ---- Añadir comentario
+    // ------------------- POST ----------------------
+
     @PostMapping
-    public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest commentRequest) {
-        CommentResponse createdComment = commentService.createComment(commentRequest);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CommentResponse> createComment(
+            @Valid @RequestBody CommentRequest commentRequest,
+            Authentication authentication) {
+        CommentResponse createdComment = commentService.createComment(commentRequest, authentication);
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 
-    // ---- Reportar comentario
     @PostMapping("/{commentId}/report")
-    public ResponseEntity<?> reportComment(@PathVariable Integer commentId) {
-        commentService.reportComment(commentId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> reportComment(@PathVariable Integer commentId, Authentication authentication) {
+        commentService.reportComment(commentId, authentication);
         return ResponseEntity.ok().build();
     }
 
-    // ---- Eliminar un comentario
-    @DeleteMapping("/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Integer commentId) {
-        commentService.deleteComment(commentId);
-        return ResponseEntity.noContent().build();
-    }
+    // ------------------- GET ----------------------
 
-    // ---- Obtener comentarios de un vídeo
     @GetMapping("/article/{articleId}")
     public ResponseEntity<Page<CommentResponse>> getCommentsByArticle(
             @PathVariable Integer articleId,
             Pageable pageable) {
-
         Page<CommentResponse> comments = commentService.getCommentsByArticle(articleId, pageable);
         return ResponseEntity.ok(comments);
     }
 
-    // ---- Obtener todos los comentarios
     @GetMapping
     public ResponseEntity<Page<CommentResponse>> getAllComments(Pageable pageable) {
         Page<CommentResponse> comments = commentService.getComments(pageable);
         return ResponseEntity.ok(comments);
     }
 
-    // ---- Obtener los comentarios reportados
     @GetMapping("/reported")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     public ResponseEntity<Page<CommentResponse>> getReportedComments(
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo,
@@ -72,20 +69,28 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
-    // ---- Aprobar comentario (rechazar reportes)
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    // ------------------- PUT ----------------------
+
     @PutMapping("/{commentId}/approve")
-    public ResponseEntity<String> approveComment(@PathVariable Integer commentId) {
-        commentService.rejectReports(commentId);
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    public ResponseEntity<String> approveComment(@PathVariable Integer commentId, Authentication authentication) {
+        commentService.rejectReports(commentId, authentication);
         return ResponseEntity.ok("Comentario aprobado y reportes rechazados");
     }
 
-    // ---- Desaprobar comentario (confirmar reportes)
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     @PutMapping("/{commentId}/reject")
-    public ResponseEntity<String> rejectComment(@PathVariable Integer commentId) {
-        commentService.confirmReports(commentId);
-        return ResponseEntity.ok("Comentario marcado como inapropiado");
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    public ResponseEntity<String> rejectComment(@PathVariable Integer commentId, Authentication authentication) {
+        commentService.confirmReports(commentId, authentication);
+        return ResponseEntity.ok("Comentario marcado como inapropiado y reportes confirmados");
     }
 
+    // ------------------- DELETE ----------------------
+
+    @DeleteMapping("/{commentId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deleteComment(@PathVariable Integer commentId, Authentication authentication) {
+        commentService.deleteComment(commentId, authentication);
+        return ResponseEntity.noContent().build();
+    }
 }
