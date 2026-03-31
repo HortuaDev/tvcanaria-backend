@@ -44,7 +44,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // 2. ARTICLES: Reglas específicas antes de la general
-                        .requestMatchers(HttpMethod.GET, "/api/articles").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/articles/my-articles")
                         .hasAnyAuthority("ADMIN", "REPORTER")
                         .requestMatchers(HttpMethod.GET, "/api/articles/recommended").authenticated()

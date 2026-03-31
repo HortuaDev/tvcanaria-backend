@@ -50,7 +50,6 @@ public class ArticleController {
     // ------------------- GET ----------------------
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<Page<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) Boolean onlyVisible,
