@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import com.tvcanaria.dto.profile.ReporterProfileResponse;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.entity.User.Role;
+import com.tvcanaria.exception.ForbiddenAccessException;
+import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.UserRepository;
 
 @Service
@@ -17,12 +19,12 @@ public class ReporterService {
     public ReporterProfileResponse getReporter(Integer reporterId) {
 
         User user = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + reporterId));
 
         Role role = user.getRole();
 
         if (role != Role.REPORTER && role != Role.ADMIN) {
-            throw new RuntimeException("El usuario no es reportero o administrador, no tiene un perfil público.");
+            throw new ForbiddenAccessException("El usuario no es reportero o administrador, no tiene un perfil público.");
         }
 
         return new ReporterProfileResponse(user.getUsername(), user.getFirstName(), user.getLastName(), user.getCreatedAt());
