@@ -29,9 +29,10 @@ public class ModeratorService {
     @Autowired
     private ModeratorReporterRepository moderatorReporterRepository;
 
+    // ------------------- ASSIGNMENTS (Admin actions) ----------------------
+
     @Transactional
     public void assignReporterToModerator(Integer moderatorId, Integer reporterId) {
-        // ... (Tu código actual de este método se mantiene igual)
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId));
 
@@ -68,6 +69,8 @@ public class ModeratorService {
         moderatorReporterRepository.delete(relation);
     }
 
+    // ------------------- READ ----------------------
+
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getReportersByModerator(Integer moderatorId) {
         if (!userRepository.existsById(moderatorId)) {
@@ -88,9 +91,51 @@ public class ModeratorService {
                 .stream().map(this::mapToUserSummary).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ModeratorResponse> getPendingRequests(Authentication auth) {
+        Integer moderatorId = getAuthenticatedUserId(auth);
+        return moderatorReporterRepository
+                .findByModerator_UserIdAndStatus(moderatorId, ModeratorReporter.Status.PENDING)
+                .stream().map(ModeratorResponse::new).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isModeratorOf(Authentication auth, Integer reporterId) {
+        Integer moderatorId = getAuthenticatedUserId(auth);
+        return moderatorReporterRepository
+                .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
+                .map(r -> r.getStatus() == ModeratorReporter.Status.ACCEPTED)
+                .orElse(false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ModeratorResponse> getMyRequests(Authentication auth) {
+        Integer reporterId = getAuthenticatedUserId(auth);
+        return moderatorReporterRepository.findByReporter_UserId(reporterId)
+                .stream().map(ModeratorResponse::new).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public UserSummaryResponse searchUser(String query, Authentication auth) {
+        Integer reporterId = getAuthenticatedUserId(auth);
+
+        User user = userRepository.findByEmailOrUsername(query, query)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró ningún usuario con el correo o usuario: " + query));
+
+        // FIX: Compare the authenticated user's ID with the found user's ID
+        if (user.getUserId().equals(reporterId)) {
+            throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
+        }
+
+        return mapToUserSummary(user);
+    }
+
+    // ------------------- REQUEST WORKFLOW ----------------------
+
     @Transactional
     public void sendRequest(ModeratorRequest request, Authentication auth) {
-        Integer reporterId = Integer.valueOf(auth.getName());
+        Integer reporterId = getAuthenticatedUserId(auth);
         Integer moderatorId = request.getModeratorId();
 
         if (reporterId.equals(moderatorId)) {
@@ -106,8 +151,6 @@ public class ModeratorService {
         Optional<ModeratorReporter> existingRelation = moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId);
 
-        // MEJORA: Validar estados específicos para evitar bloqueos eternos si fue
-        // rechazada antes.
         if (existingRelation.isPresent()) {
             ModeratorReporter relation = existingRelation.get();
             if (relation.getStatus() == ModeratorReporter.Status.PENDING) {
@@ -129,20 +172,12 @@ public class ModeratorService {
         moderatorReporterRepository.save(moderatorReporter);
     }
 
-    @Transactional(readOnly = true)
-    public List<ModeratorResponse> getPendingRequests(Authentication auth) {
-        Integer moderatorId = Integer.valueOf(auth.getName());
-        return moderatorReporterRepository
-                .findByModerator_UserIdAndStatus(moderatorId, ModeratorReporter.Status.PENDING)
-                .stream().map(ModeratorResponse::new).collect(Collectors.toList());
-    }
-
     @Transactional
     public void acceptRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con ID: " + requestId));
 
-        Integer moderatorId = Integer.valueOf(auth.getName());
+        Integer moderatorId = getAuthenticatedUserId(auth);
         if (!request.getModerator().getUserId().equals(moderatorId)) {
             throw new ForbiddenAccessException("No tienes permisos para aceptar esta solicitud");
         }
@@ -162,7 +197,7 @@ public class ModeratorService {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con ID: " + requestId));
 
-        Integer moderatorId = Integer.valueOf(auth.getName());
+        Integer moderatorId = getAuthenticatedUserId(auth);
         if (!request.getModerator().getUserId().equals(moderatorId)) {
             throw new ForbiddenAccessException("No tienes permisos para rechazar esta solicitud");
         }
@@ -171,42 +206,12 @@ public class ModeratorService {
         moderatorReporterRepository.save(request);
     }
 
-    @Transactional(readOnly = true)
-    public boolean isModeratorOf(Integer moderatorId, Integer reporterId) {
-        return moderatorReporterRepository
-                .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
-                .map(r -> r.getStatus() == ModeratorReporter.Status.ACCEPTED)
-                .orElse(false);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ModeratorResponse> getMyRequests(Authentication auth) {
-        Integer reporterId = Integer.valueOf(auth.getName());
-        return moderatorReporterRepository.findByReporter_UserId(reporterId)
-                .stream().map(ModeratorResponse::new).collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public UserSummaryResponse searchUser(String query, Authentication auth) {
-        String reporter = auth.getName();
-
-        User user = userRepository.findByEmailOrUsername(query, query)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No se encontró ningún usuario con el correo o usuario: " + query));
-
-        if (user.getUsername().equals(reporter)) {
-            throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
-        }
-
-        return mapToUserSummary(user);
-    }
-
     @Transactional
     public void cancelRequest(Integer requestId, Authentication auth) {
         ModeratorReporter request = moderatorReporterRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con ID: " + requestId));
 
-        Integer reporterId = Integer.valueOf(auth.getName());
+        Integer reporterId = getAuthenticatedUserId(auth);
         if (!request.getReporter().getUserId().equals(reporterId)) {
             throw new ForbiddenAccessException("No tienes permisos para cancelar esta solicitud");
         }
@@ -214,7 +219,12 @@ public class ModeratorService {
         moderatorReporterRepository.delete(request);
     }
 
-    // ---- Helper ----
+    // ------------------- HELPERS ----------------------
+
+    private Integer getAuthenticatedUserId(Authentication auth) {
+        return Integer.valueOf(auth.getName());
+    }
+
     private UserSummaryResponse mapToUserSummary(User user) {
         UserSummaryResponse response = new UserSummaryResponse();
         response.setUserId(user.getUserId());
