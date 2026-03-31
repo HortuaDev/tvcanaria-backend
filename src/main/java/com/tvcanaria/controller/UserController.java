@@ -35,6 +35,8 @@ public class UserController {
         this.userService = userService;
     }
 
+    // ------------------- LECTURA PÚBLICA / BÚSQUEDA ----------------------
+
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Page<UserProfileResponse>> getUsers(
@@ -49,39 +51,38 @@ public class UserController {
         return ResponseEntity.ok(userService.searchUsers(search, sortBy, order, dateFrom, dateTo, page, size));
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
-        return ResponseEntity.ok(userService.getUserProfile(authentication.getName()));
-    }
-
-    @PutMapping("/profile")
-    public ResponseEntity<UserProfileResponse> updateProfile(
-            @Valid @RequestBody UpdateProfileRequest request,
-            Authentication authentication) {
-        return ResponseEntity.ok(userService.updateUserProfile(authentication.getName(), request));
-    }
-
     @GetMapping("/{id}/categories")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Set<CategoryResponse>> getUserCategories(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getUserCategories(id));
     }
 
+    // ------------------- PERFIL DEL USUARIO AUTENTICADO ----------------------
+
+    @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
+        return ResponseEntity.ok(userService.getUserProfile(authentication));
+    }
+
+    @PutMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserProfileResponse> updateProfile(
+            @Valid @RequestBody UpdateProfileRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(userService.updateUserProfile(authentication, request));
+    }
+
     @PutMapping("/{id}/categories")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Set<CategoryResponse>> updateUserCategories(
             @PathVariable Integer id,
-            @RequestBody UserCategoryRequest request) {
-        return ResponseEntity.ok(userService.updateUserCategories(id, request.getCategoryIds()));
+            @RequestBody UserCategoryRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(userService.updateUserCategories(id, request.getCategoryIds(), authentication));
     }
 
-    @PutMapping("/{id}/toggle-status")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<UserProfileResponse> toggleUserStatus(
-            @PathVariable Integer id,
-            @RequestParam(required = false) String reason) {
-
-        UserProfileResponse updatedUser = userService.toggleUserStatus(id, reason);
-        return ResponseEntity.ok(updatedUser);
-    }
+    // ------------------- ADMINISTRACIÓN ----------------------
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -95,5 +96,15 @@ public class UserController {
             @PathVariable Integer id,
             @Valid @RequestBody UpdateUserAdminRequest request) {
         return ResponseEntity.ok(userService.updateUserByAdmin(id, request));
+    }
+
+    @PutMapping("/{id}/toggle-status")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<UserProfileResponse> toggleUserStatus(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String reason) {
+
+        UserProfileResponse updatedUser = userService.toggleUserStatus(id, reason);
+        return ResponseEntity.ok(updatedUser);
     }
 }
