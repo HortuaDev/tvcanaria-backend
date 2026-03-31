@@ -154,12 +154,24 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
+        // 1 es el dueño del comentario?
+        boolean isCommentAuthor = comment.getUser().getUserId().equals(user.getUserId());
+
+        // 2 es Admin?
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
+
+        // 3 es el autor del articulo/canal?
         boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
+
+        // 4 es moderador?
         boolean isAssignedModerator = isAssignedModerator(comment, user);
+
         boolean hasEnoughReports = comment.getOffenseCount() >= 5;
 
-        if (isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
+        // ACTUALIZACIÓN DE LA LOGICA:
+        // Permitir si es el autor del comentario O es Admin O (es reportero/moderador Y
+        // hay 5+ reportes)
+        if (isCommentAuthor || isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
             commentReportRepository.deleteByComment_CommentId(commentId);
             commentRepository.delete(comment);
             return;
@@ -214,6 +226,7 @@ public class CommentService {
         commentReportRepository.deleteByComment_CommentId(commentId);
         commentRepository.delete(comment);
     }
+
     // ---- Rechazar reportes a un comentario
     @Transactional
     public void rejectReports(Integer commentId) {
