@@ -62,10 +62,11 @@ public class CommentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "desc") String order) {
+            @RequestParam(defaultValue = "desc") String order,
+            Authentication authentication) {
 
-        Page<CommentResponse> comments = commentService.getReportedComments(dateFrom, dateTo, page, size, sortBy,
-                order);
+        Page<CommentResponse> comments = commentService.getReportedComments(
+                dateFrom, dateTo, page, size, sortBy, order, authentication);
         return ResponseEntity.ok(comments);
     }
 
