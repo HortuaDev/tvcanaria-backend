@@ -225,9 +225,9 @@ public class ArticleService {
 
         checkPermission(article, user);
 
-        if (request.getTitle() != null)
+        if (request.getTitle() != null && !request.getTitle().isBlank())
             article.setTitle(request.getTitle());
-        if (request.getLocation() != null)
+        if (request.getLocation() != null && !request.getLocation().isBlank())
             article.setLocation(request.getLocation());
         if (request.getDescription() != null)
             article.setDescription(request.getDescription());
@@ -236,7 +236,7 @@ public class ArticleService {
 
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             if (request.getCategoryIds().size() > 5) {
-                throw new RuntimeException("Un artículo no puede tener más de 5 categorías");
+                throw new IllegalArgumentException("Un artículo no puede tener más de 5 categorías");
             }
             Set<Category> categories = categoryService.getCategoriesByIds(request.getCategoryIds());
             article.setCategories(categories);

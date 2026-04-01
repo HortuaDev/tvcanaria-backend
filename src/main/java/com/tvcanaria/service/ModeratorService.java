@@ -100,8 +100,7 @@ public class ModeratorService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isModeratorOf(Authentication auth, Integer reporterId) {
-        Integer moderatorId = getAuthenticatedUserId(auth);
+    public boolean isModeratorOf(Integer moderatorId, Integer reporterId) {
         return moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
                 .map(r -> r.getStatus() == ModeratorReporter.Status.ACCEPTED)

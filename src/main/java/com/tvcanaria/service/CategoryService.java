@@ -29,7 +29,20 @@ public class CategoryService {
 
     // Obtener categorías por un set de IDs
     public Set<Category> getCategoriesByIds(Set<Integer> categoryIds) {
-        return new HashSet<>(categoryRepository.findAllById(categoryIds));
+        Set<Category> categories = new HashSet<>(categoryRepository.findAllById(categoryIds));
+
+        if (categories.size() != categoryIds.size()) {
+            Set<Integer> foundIds = categories.stream()
+                    .map(Category::getCategoryId)
+                    .collect(Collectors.toSet());
+
+            Set<Integer> notFoundIds = categoryIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            throw new ResourceNotFoundException("Categorías no encontradas con IDs: " + notFoundIds);
+        }
+        return categories;
     }
 
     // Obtener una categoría por ID
