@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,8 +53,8 @@ public class CommentService {
     // ------------------- CREATE / REPORT ----------------------
 
     @Transactional
-    public CommentResponse createComment(CommentRequest commentRequest) {
-        User user = getAuthenticatedUser();
+    public CommentResponse createComment(CommentRequest commentRequest, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
 
         if (user.getUserBlock() != null &&
                 user.getUserBlock().getBlockedUntil() != null &&
@@ -150,67 +149,10 @@ public class CommentService {
                 .map(this::mapToCommentResponse);
     }
 
-    @Transactional
-    public void reportComment(Integer commentId) {
-        User user = getAuthenticatedUser();
-
-        if (commentReportRepository.existsByComment_CommentIdAndReporter_UserId(commentId, user.getUserId())) {
-            throw new DuplicateResourceException("Ya has reportado este comentario anteriormente");
-        }
-
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
-
-        CommentReport report = new CommentReport();
-        report.setComment(comment);
-        report.setReporter(user);
-        report.setReviewed(false);
-        report.setValidReport(false);
-
-        commentReportRepository.save(report);
-
-        comment.setOffenseCount(comment.getOffenseCount() + 1);
-        commentRepository.save(comment);
-    }
-
-    @Transactional
-    public void deleteComment(Integer commentId) {
-        User user = getAuthenticatedUser();
-
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
-
-        // 1 es el dueño del comentario?
-        boolean isCommentAuthor = comment.getUser().getUserId().equals(user.getUserId());
-
-        // 2 es Admin?
-        boolean isAdmin = user.getRole() == User.Role.ADMIN;
-
-        // 3 es el autor del articulo/canal?
-        boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
-
-        // 4 es moderador?
-        boolean isAssignedModerator = isAssignedModerator(comment, user);
-
-        boolean hasEnoughReports = comment.getOffenseCount() >= 5;
-
-        // ACTUALIZACIÓN DE LA LOGICA:
-        // Permitir si es el autor del comentario O es Admin O (es reportero/moderador Y
-        // hay 5+ reportes)
-        if (isCommentAuthor || isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
-            commentReportRepository.deleteByComment_CommentId(commentId);
-            commentRepository.delete(comment);
-            return;
-        }
-
-        throw new ForbiddenAccessException("No tienes los permisos necesarios para eliminar este comentario");
-    }
-
     // --- Confirmar reportes (moderador decide castigar)
     @Transactional
-    public void confirmReports(Integer commentId) {
-
-        User user = getAuthenticatedUser();
+    public void confirmReports(Integer commentId, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
@@ -249,8 +191,8 @@ public class CommentService {
     }
 
     @Transactional
-    public void rejectReports(Integer commentId) {
-        User user = getAuthenticatedUser();
+    public void rejectReports(Integer commentId, Authentication auth) {
+        User user = getAuthenticatedUser(auth);
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
@@ -306,13 +248,6 @@ public class CommentService {
 
     public int countUserStrikes(User user) {
         return userBlockRepository.countByUser_UserId(user.getUserId());
-    }
-
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer userId = Integer.parseInt(authentication.getName());
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
     }
 
     private boolean isAssignedModerator(Comment comment, User user) {

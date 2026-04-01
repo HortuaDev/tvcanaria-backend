@@ -100,7 +100,8 @@ public class ModeratorService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isModeratorOf(Integer moderatorId, Integer reporterId) {
+    public boolean isModeratorOf(Authentication auth, Integer reporterId) {
+        Integer moderatorId = getAuthenticatedUserId(auth);
         return moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
                 .map(r -> r.getStatus() == ModeratorReporter.Status.ACCEPTED)
@@ -122,7 +123,6 @@ public class ModeratorService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró ningún usuario con el correo o usuario: " + query));
 
-        // FIX: Compare the authenticated user's ID with the found user's ID
         if (user.getUserId().equals(reporterId)) {
             throw new BadRequestException("No puedes enviarte una solicitud a ti mismo");
         }
@@ -157,7 +157,6 @@ public class ModeratorService {
             } else if (relation.getStatus() == ModeratorReporter.Status.ACCEPTED) {
                 throw new DuplicateResourceException("Este usuario ya es tu moderador.");
             } else if (relation.getStatus() == ModeratorReporter.Status.REJECTED) {
-                // Si estaba rechazada, le damos otra oportunidad y la pasamos a PENDING
                 relation.setStatus(ModeratorReporter.Status.PENDING);
                 moderatorReporterRepository.save(relation);
                 return;
