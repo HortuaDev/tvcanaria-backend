@@ -125,7 +125,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public Page<CommentResponse> getReportedComments(String dateFromStr, String dateToStr, int page, int size,
-            String sortBy, String order) {
+            String sortBy, String order, Authentication auth) {
 
         String sortProperty = "createdAt";
         if ("alphabetical".equals(sortBy)) {
@@ -145,8 +145,21 @@ public class CommentService {
                 ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
                 : null;
 
-        return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
-                .map(this::mapToCommentResponse);
+        User user = getAuthenticatedUser(auth);
+
+        // Admin ve todos, moderador solo los de su reportero asignado
+        if (user.getRole() == User.Role.ADMIN) {
+            return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
+                    .map(this::mapToCommentResponse);
+        } else {
+            return commentRepository.findReportedCommentsByModeratorId(
+                    user.getUserId(),
+                    ModeratorReporter.Status.ACCEPTED,
+                    dateFrom,
+                    dateTo,
+                    pageable)
+                    .map(this::mapToCommentResponse);
+        }
     }
 
     // --- Confirmar reportes (moderador decide castigar)
@@ -223,13 +236,14 @@ public class CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isCommentAuthor = comment.getUser().getUserId().equals(user.getUserId()); // ← faltaba esto
         boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
         boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
                 .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
                         && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
         boolean hasEnoughReports = comment.getOffenseCount() >= 5;
 
-        if (isAdmin || (hasEnoughReports && (isReporter || isAssignedModerator))) {
+        if (isAdmin || isCommentAuthor || (hasEnoughReports && (isReporter || isAssignedModerator))) {
             commentReportRepository.deleteByComment_CommentId(commentId);
             commentRepository.delete(comment);
             return;
@@ -237,7 +251,6 @@ public class CommentService {
 
         throw new ForbiddenAccessException("No tienes los permisos necesarios para eliminar este comentario");
     }
-
     // ------------------- HELPERS ----------------------
 
     private User getAuthenticatedUser(Authentication auth) {
