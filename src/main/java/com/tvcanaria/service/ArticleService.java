@@ -112,6 +112,7 @@ public class ArticleService {
             String dateFromStr,
             String dateToStr,
             List<String> categories,
+            String keyword,
             int page,
             int size,
             String sortBy,
@@ -134,13 +135,14 @@ public class ArticleService {
         LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
                 ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
                 : null;
-
         LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
                 ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
                 : null;
 
         List<String> safeCategories = (categories != null && !categories.isEmpty()) ? categories : null;
         boolean hasCategories = (safeCategories != null);
+
+        String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
 
         return articleRepository.findMyArticlesWithFilters(
                 user.getUserId(),
@@ -149,6 +151,7 @@ public class ArticleService {
                 dateTo,
                 hasCategories,
                 safeCategories,
+                searchKeyword,
                 pageable).map(ArticleResponse::new);
     }
 

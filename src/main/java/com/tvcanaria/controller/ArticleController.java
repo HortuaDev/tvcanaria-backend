@@ -83,14 +83,15 @@ public class ArticleController {
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo,
             @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
             Authentication authentication) {
 
-        Page<ArticleResponse> articles = articleService.getMyArticles(dateFrom, dateTo, categories, page, size, sortBy,
-                order, authentication);
+        Page<ArticleResponse> articles = articleService.getMyArticles(dateFrom, dateTo, categories, keyword, page, size,
+                sortBy, order, authentication);
         return ResponseEntity.ok(articles);
     }
 
