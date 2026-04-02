@@ -89,7 +89,7 @@ public class CommentService {
         article.setRating(articleRepository.calculateAverageByArticleId(article.getArticleId()));
         articleRepository.save(article);
 
-        return mapToCommentResponse(savedComment);
+        return mapToCommentResponse(savedComment, user.getUserId());
     }
 
     /**
@@ -131,25 +131,32 @@ public class CommentService {
      *
      * @param articleId identificador del artículo
      * @param pageable  parámetros de paginación
+     * @param auth      usuario autenticado (opcional para canReport)
      * @return página de comentarios del artículo
      */
     @Transactional(readOnly = true)
-    public Page<CommentResponse> getCommentsByArticle(Integer articleId, Pageable pageable) {
+    public Page<CommentResponse> getCommentsByArticle(Integer articleId, Pageable pageable, Authentication auth) {
         if (!articleRepository.existsById(articleId)) {
             throw new ResourceNotFoundException("Artículo no encontrado con ID: " + articleId);
         }
+
+        User user = getAuthenticatedUser(auth);
+
         return commentRepository.findByArticle_ArticleIdOrderByCreatedAtDesc(articleId, pageable)
-                .map(this::mapToCommentResponse);
+                .map(comment -> this.mapToCommentResponse(comment, user.getUserId()));
     }
 
     /**
      * Devuelve todos los comentarios paginados (sin filtros).
      *
      * @param pageable parámetros de paginación
+     * @param auth     usuario autenticado (opcional para canReport)
      * @return página de comentarios
      */
-    public Page<CommentResponse> getComments(Pageable pageable) {
-        return commentRepository.findAll(pageable).map(this::mapToCommentResponse);
+    public Page<CommentResponse> getComments(Pageable pageable, Authentication auth) {
+        Integer currentUserId = (auth != null && auth.isAuthenticated()) ? Integer.valueOf(auth.getName()) : null;
+        return commentRepository.findAll(pageable)
+                .map(comment -> this.mapToCommentResponse(comment, currentUserId));
     }
 
     /**
@@ -187,21 +194,22 @@ public class CommentService {
                 : null;
 
         User user = getAuthenticatedUser(auth);
+        Integer currentUserId = user.getUserId();
 
         if (user.getRole() == Role.ADMIN) {
             return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
-                    .map(this::mapToCommentResponse);
+                    .map(comment -> this.mapToCommentResponse(comment, currentUserId));
 
         } else if (user.getRole() == Role.REPORTER) {
             return commentRepository.findReportedCommentsByReporterId(
                     user.getUserId(), dateFrom, dateTo, pageable)
-                    .map(this::mapToCommentResponse);
+                    .map(comment -> this.mapToCommentResponse(comment, currentUserId));
 
         } else {
             // MODERATOR
             return commentRepository.findReportedCommentsByModeratorId(
                     user.getUserId(), Status.ACCEPTED, dateFrom, dateTo, pageable)
-                    .map(this::mapToCommentResponse);
+                    .map(comment -> this.mapToCommentResponse(comment, currentUserId));
         }
     }
 
@@ -358,12 +366,14 @@ public class CommentService {
     }
 
     /**
-     * Convierte una entidad {@link Comment} en su DTO de respuesta.
+     * Convierte una entidad {@link Comment} en su DTO de respuesta e inyecta la
+     * lógica de canReport basada en el usuario actual.
      *
-     * @param comment entidad a convertir
+     * @param comment       entidad a convertir
+     * @param currentUserId ID del usuario que realiza la consulta (puede ser null)
      * @return DTO {@link CommentResponse}
      */
-    private CommentResponse mapToCommentResponse(Comment comment) {
+    private CommentResponse mapToCommentResponse(Comment comment, Integer currentUserId) {
         CommentResponse response = new CommentResponse();
         response.setCommentId(comment.getCommentId());
         response.setComment(comment.getComment());
@@ -373,6 +383,21 @@ public class CommentService {
         response.setUsername(comment.getUser() != null ? comment.getUser().getUsername() : null);
         response.setAuthorId(comment.getUser() != null ? comment.getUser().getUserId() : null);
         response.setArticleId(comment.getArticle().getArticleId());
+
+        // Lógica para canReport:
+        // 1. Debe haber un usuario autenticado.
+        // 2. No puede ser el autor del comentario.
+        // 3. No debe haber reportado el comentario previamente.
+        if (currentUserId == null) {
+            response.setCanReport(false);
+        } else {
+            boolean isAuthor = comment.getUser() != null && comment.getUser().getUserId().equals(currentUserId);
+            boolean alreadyReported = commentReportRepository.existsByComment_CommentIdAndReporter_UserId(
+                    comment.getCommentId(), currentUserId);
+
+            response.setCanReport(!isAuthor && !alreadyReported);
+        }
+
         return response;
     }
 }

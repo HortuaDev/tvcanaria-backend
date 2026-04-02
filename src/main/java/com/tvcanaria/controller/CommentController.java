@@ -60,28 +60,34 @@ public class CommentController {
 
     /**
      * Devuelve los comentarios de un artículo de forma paginada.
+     * Se pasa el objeto Authentication para determinar si el usuario actual puede
+     * reportar.
      *
-     * @param articleId identificador del artículo
-     * @param pageable  parámetros de paginación y ordenación
+     * @param articleId      identificador del artículo
+     * @param pageable       parámetros de paginación y ordenación
+     * @param authentication usuario autenticado (opcional)
      * @return {@code 200 OK} con página de comentarios
      */
     @GetMapping("/article/{articleId}")
     public ResponseEntity<Page<CommentResponse>> getCommentsByArticle(
             @PathVariable Integer articleId,
-            Pageable pageable) {
-        Page<CommentResponse> comments = commentService.getCommentsByArticle(articleId, pageable);
+            Pageable pageable,
+            Authentication authentication) {
+        Page<CommentResponse> comments = commentService.getCommentsByArticle(articleId, pageable, authentication);
         return ResponseEntity.ok(comments);
     }
 
     /**
      * Devuelve todos los comentarios de forma paginada.
      *
-     * @param pageable parámetros de paginación y ordenación
+     * @param pageable       parámetros de paginación y ordenación
+     * @param authentication usuario autenticado (opcional)
      * @return {@code 200 OK} con página de comentarios
      */
     @GetMapping
-    public ResponseEntity<Page<CommentResponse>> getAllComments(Pageable pageable) {
-        Page<CommentResponse> comments = commentService.getComments(pageable);
+    public ResponseEntity<Page<CommentResponse>> getAllComments(Pageable pageable, Authentication authentication) {
+        // Ahora pasamos authentication al service
+        Page<CommentResponse> comments = commentService.getComments(pageable, authentication);
         return ResponseEntity.ok(comments);
     }
 
@@ -89,12 +95,13 @@ public class CommentController {
      * Devuelve los comentarios reportados con filtros opcionales.
      * Solo accesible por ADMIN o MODERATOR.
      *
-     * @param dateFrom fecha de inicio (yyyy-MM-dd, opcional)
-     * @param dateTo   fecha de fin (yyyy-MM-dd, opcional)
-     * @param page     número de página (por defecto 0)
-     * @param size     tamaño de página (por defecto 10)
-     * @param sortBy   campo de ordenación (por defecto "date")
-     * @param order    dirección de ordenación: "asc" o "desc"
+     * @param dateFrom       fecha de inicio (yyyy-MM-dd, opcional)
+     * @param dateTo         fecha de fin (yyyy-MM-dd, opcional)
+     * @param page           número de página (por defecto 0)
+     * @param size           tamaño de página (por defecto 10)
+     * @param sortBy         campo de ordenación (por defecto "date")
+     * @param order          dirección de ordenación: "asc" o "desc"
+     * @param authentication usuario autenticado
      * @return {@code 200 OK} con página de comentarios reportados
      */
     @GetMapping("/reported")

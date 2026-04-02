@@ -24,6 +24,8 @@ public class CommentResponse {
 
     private Integer offenseCount;
 
+    private Boolean canReport;
+
     private BigDecimal rating;
 
     private String username;
