@@ -1,6 +1,9 @@
 package com.tvcanaria.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
@@ -8,17 +11,14 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "category")
 public class Category {
 
@@ -30,9 +30,11 @@ public class Category {
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "categories")
     private Set<User> users = new HashSet<>();
 
+    @Builder.Default
     @ManyToMany(mappedBy = "categories")
     @JsonIgnore
     private Set<Article> articles = new HashSet<>();

@@ -1,6 +1,9 @@
 package com.tvcanaria.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -28,6 +31,9 @@ import jakarta.persistence.Table;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "article")
 public class Article {
 
@@ -45,6 +51,7 @@ public class Article {
     @Column(name = "video_url", length = 255)
     private String videoUrl;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isHidden = false;
 
@@ -62,10 +69,12 @@ public class Article {
     @JsonIgnoreProperties({ "articles", "password" })
     private User author;
 
+    @Builder.Default
     @JsonIgnore
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(name = "article_category", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonIgnoreProperties("articles")
@@ -77,5 +86,4 @@ public class Article {
             createdAt = LocalDateTime.now();
         }
     }
-
 }

@@ -1,12 +1,16 @@
 package com.tvcanaria.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +22,9 @@ import jakarta.persistence.Table;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "user_block")
 public class UserBlock {
 
@@ -35,7 +42,7 @@ public class UserBlock {
     @Column(name = "blocked_until")
     private LocalDateTime blockedUntil;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
@@ -45,5 +52,4 @@ public class UserBlock {
             createdAt = LocalDateTime.now();
         }
     }
-
 }

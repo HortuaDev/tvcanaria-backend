@@ -1,6 +1,9 @@
 package com.tvcanaria.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.minidev.json.annotate.JsonIgnore;
 
@@ -11,25 +14,14 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.tvcanaria.enums.Role;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "user")
 public class User {
 
@@ -59,24 +51,29 @@ public class User {
     @Column(name = "password_hash", nullable = false, length = 64)
     private String passwordHash;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 10)
     private Role role = Role.READER;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<Article> articles = new HashSet<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<Comment> comments = new HashSet<>();
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(name = "user_category", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
@@ -84,16 +81,20 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserBlock userBlock;
 
+    @Builder.Default
     @OneToMany(mappedBy = "reporter")
     private Set<ModeratorReporter> moderatorRelations = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null)
+        if (createdAt == null) {
             createdAt = LocalDateTime.now();
-        if (role == null)
+        }
+        if (role == null) {
             role = Role.READER;
-        if (isActive == null)
+        }
+        if (isActive == null) {
             isActive = true;
+        }
     }
 }
