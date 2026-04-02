@@ -48,7 +48,7 @@ public class ArticleController {
      * @throws Exception si falla el procesamiento del vídeo
      */
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
-    @PreAuthorize("hasAnyAuthority('ADMIN','REPORTER')")
+    @PreAuthorize("hasAnyAuthority('REPORTER')")
     public ResponseEntity<ArticleResponse> uploadArticle(
             @Valid @ModelAttribute ArticleUploadRequest request,
             Authentication authentication) throws Exception {
@@ -60,7 +60,8 @@ public class ArticleController {
 
     // ------------------- GET ----------------------
     /**
-     * Devuelve artículos paginados, con filtro opcional por categoría o visibilidad.
+     * Devuelve artículos paginados, con filtro opcional por categoría o
+     * visibilidad.
      *
      * @param categoryId  (opcional) filtra por categoría
      * @param onlyVisible (opcional) si es {@code true}, solo artículos visibles
@@ -96,7 +97,8 @@ public class ArticleController {
     }
 
     /**
-     * Devuelve artículos relacionados con el indicado (misma categoría u otros criterios).
+     * Devuelve artículos relacionados con el indicado (misma categoría u otros
+     * criterios).
      *
      * @param id identificador del artículo de referencia
      * @return {@code 200 OK} con lista de artículos relacionados
@@ -183,7 +185,8 @@ public class ArticleController {
      *
      * @param id             identificador del artículo
      * @param request        nuevos datos del artículo (JSON)
-     * @param authentication usuario autenticado; solo puede editar su propio artículo salvo ADMIN
+     * @param authentication usuario autenticado; solo puede editar su propio
+     *                       artículo salvo ADMIN
      * @return {@code 200 OK} con el artículo actualizado
      */
     @PutMapping("/{id}")
@@ -222,7 +225,8 @@ public class ArticleController {
      * Elimina un artículo por su identificador.
      *
      * @param id             identificador del artículo
-     * @param authentication usuario autenticado; solo puede borrar su propio artículo salvo ADMIN
+     * @param authentication usuario autenticado; solo puede borrar su propio
+     *                       artículo salvo ADMIN
      * @return {@code 204 No Content}
      */
     @DeleteMapping("/{id}")

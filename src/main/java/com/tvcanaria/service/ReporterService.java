@@ -32,9 +32,9 @@ public class ReporterService {
 
         Role role = user.getRole();
 
-        if (role != Role.REPORTER && role != Role.ADMIN) {
+        if (role != Role.REPORTER) {
             throw new ForbiddenAccessException(
-                    "El usuario no es reportero o administrador, no tiene un perfil público.");
+                    "El usuario no es reportero, no tiene un perfil público.");
         }
 
         return new ReporterProfileResponse(user.getUsername(), user.getFirstName(), user.getLastName(),
