@@ -13,13 +13,20 @@ import com.tvcanaria.entity.Category;
 import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.CategoryRepository;
 
+/**
+ * Servicio para la gestión de categorías.
+ */
 @Service
 public class CategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // Obtener todas las categorías
+    /**
+     * Devuelve todas las categorías disponibles.
+     *
+     * @return lista de todas las categorías
+     */
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll()
                 .stream()
@@ -27,7 +34,13 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    // Obtener categorías por un set de IDs
+    /**
+     * Obtiene entidades {@link Category} a partir de un conjunto de IDs.
+     * Lanza excepción si algún ID no existe.
+     *
+     * @param categoryIds conjunto de IDs de categorías
+     * @return conjunto de entidades {@link Category} encontradas
+     */
     public Set<Category> getCategoriesByIds(Set<Integer> categoryIds) {
         Set<Category> categories = new HashSet<>(categoryRepository.findAllById(categoryIds));
 
@@ -45,7 +58,12 @@ public class CategoryService {
         return categories;
     }
 
-    // Obtener una categoría por ID
+    /**
+     * Obtiene una categoría por su identificador.
+     *
+     * @param categoryId identificador de la categoría
+     * @return la categoría encontrada
+     */
     public CategoryResponse getCategoryById(Integer categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + categoryId));
@@ -53,7 +71,13 @@ public class CategoryService {
         return mapToResponse(category);
     }
 
-    // Actualizar categoría existente
+    /**
+     * Actualiza el nombre de una categoría existente.
+     *
+     * @param id           identificador de la categoría a actualizar
+     * @param categoryData objeto con los nuevos datos (solo {@code name} es actualizable)
+     * @return la categoría actualizada
+     */
     public CategoryResponse updateCategory(Integer id, Category categoryData) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
@@ -66,14 +90,24 @@ public class CategoryService {
         return mapToResponse(updated);
     }
 
+    /**
+     * Elimina una categoría por su identificador.
+     *
+     * @param id identificador de la categoría a eliminar
+     */
     public void deleteCategory(Integer id) {
         if (!categoryRepository.existsById(id)) {
             throw new ResourceNotFoundException("No se puede eliminar: Categoría no encontrada con ID " + id);
         }
-
         categoryRepository.deleteById(id);
     }
 
+    /**
+     * Convierte una entidad {@link Category} en su DTO de respuesta.
+     *
+     * @param category entidad a convertir
+     * @return DTO {@link CategoryResponse}
+     */
     private CategoryResponse mapToResponse(Category category) {
         return new CategoryResponse(category);
     }
