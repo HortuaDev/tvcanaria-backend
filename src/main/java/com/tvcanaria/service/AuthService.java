@@ -12,6 +12,9 @@ import com.tvcanaria.exception.*;
 import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.security.JwtTokenProvider;
 
+/**
+ * Servicio para el registro y autenticación local de usuarios.
+ */
 @Service
 public class AuthService {
 
@@ -24,9 +27,15 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * Registra un nuevo usuario con autenticación local.
+     * Valida que el email y el nombre de usuario no estén ya en uso.
+     *
+     * @param request datos de registro (username, nombre, email, contraseña)
+     * @return token JWT y datos básicos del usuario registrado
+     */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        // Validar si el usuario ya existe
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserAlreadyExistsException("El email ya está registrado");
         }
@@ -34,7 +43,6 @@ public class AuthService {
             throw new UserAlreadyExistsException("El nombre de usuario ya está en uso");
         }
 
-        // Crear nuevo usuario
         User user = new User();
         user.setUsername(request.getUsername());
         user.setFirstName(request.getFirstName());
@@ -47,7 +55,6 @@ public class AuthService {
 
         user = userRepository.save(user);
 
-        // Generar token JWT
         String token = jwtTokenProvider.generateToken(user);
 
         return new AuthResponse(
@@ -58,6 +65,13 @@ public class AuthService {
                 user.getRole().name());
     }
 
+    /**
+     * Autentica a un usuario por email o nombre de usuario y contraseña.
+     * Verifica que la cuenta esté activa antes de permitir el acceso.
+     *
+     * @param request credenciales del usuario (usernameOrEmail, contraseña)
+     * @return token JWT y datos básicos del usuario autenticado
+     */
     public AuthResponse login(LoginRequest request) {
         String identifier = request.getUsernameOrEmail();
 
@@ -82,5 +96,4 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole().name());
     }
-
 }
