@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador REST para la consulta de categorías.
+ * Base path: /api/categories
+ */
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
@@ -15,17 +19,26 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    // Obtener todas las categorías (público)
+    /**
+     * Devuelve todas las categorías disponibles.
+     *
+     * @return {@code 200 OK} con la lista de categorías
+     */
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
         List<CategoryResponse> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
-    // Obtener una categoría por ID (público)
+    /**
+     * Obtiene una categoría por su identificador.
+     *
+     * @param id identificador de la categoría
+     * @return {@code 200 OK} con la categoría encontrada
+     */
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Integer id) {
-    	CategoryResponse category = categoryService.getCategoryById(id);
+        CategoryResponse category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
 
