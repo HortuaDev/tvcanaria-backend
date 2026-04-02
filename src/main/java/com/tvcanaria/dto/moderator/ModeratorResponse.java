@@ -3,6 +3,17 @@ package com.tvcanaria.dto.moderator;
 import com.tvcanaria.entity.ModeratorReporter;
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ModeratorResponse {
 
     private Integer id;
@@ -41,57 +52,5 @@ public class ModeratorResponse {
 
         this.status = r.getStatus().name();
         this.createdAt = r.getCreatedAt();
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public Integer getReporterId() {
-        return reporterId;
-    }
-
-    public String getReporterUsername() {
-        return reporterUsername;
-    }
-
-    public String getReporterFirstName() {
-        return reporterFirstName;
-    }
-
-    public String getReporterLastName() {
-        return reporterLastName;
-    }
-
-    public String getReporterEmail() {
-        return reporterEmail;
-    }
-
-    public Integer getModeratorId() {
-        return moderatorId;
-    }
-
-    public String getModeratorUsername() {
-        return moderatorUsername;
-    }
-
-    public String getModeratorFirstName() {
-        return moderatorFirstName;
-    }
-
-    public String getModeratorLastName() {
-        return moderatorLastName;
-    }
-
-    public String getModeratorEmail() {
-        return moderatorEmail;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }

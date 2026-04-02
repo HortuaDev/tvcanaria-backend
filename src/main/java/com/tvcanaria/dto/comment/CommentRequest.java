@@ -3,6 +3,17 @@ package com.tvcanaria.dto.comment;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CommentRequest {
 
     @NotBlank(message = "El comentario no puede estar vacío")
@@ -15,28 +26,4 @@ public class CommentRequest {
 
     @NotNull(message = "El ID del artículo es obligatorio")
     private Integer articleId;
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public BigDecimal getRating() {
-        return rating;
-    }
-
-    public void setRating(BigDecimal rating) {
-        this.rating = rating;
-    }
-
-    public Integer getArticleId() {
-        return articleId;
-    }
-
-    public void setArticleId(Integer articleId) {
-        this.articleId = articleId;
-    }
 }

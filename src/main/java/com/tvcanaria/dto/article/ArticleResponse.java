@@ -8,6 +8,17 @@ import java.util.stream.Collectors;
 import com.tvcanaria.dto.category.CategoryResponse;
 import com.tvcanaria.entity.Article;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ArticleResponse {
 
     private Integer articleId;
@@ -44,15 +55,4 @@ public class ArticleResponse {
                 .collect(Collectors.toSet());
     }
 
-    public Integer getArticleId() { return articleId; }
-    public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public String getVideoUrl() { return videoUrl; }
-    public Boolean getIsHidden() { return isHidden; }
-    public String getLocation() { return location; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public Integer getAuthorId() { return authorId; }
-    public String getAuthorUsername() { return authorUsername; }
-    public BigDecimal getRating() { return rating; }
-    public Set<CategoryResponse> getCategories() { return categories; }
 }
