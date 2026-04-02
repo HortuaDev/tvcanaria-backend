@@ -1,6 +1,8 @@
 package com.tvcanaria.dto.profile;
 
 import com.tvcanaria.entity.User;
+import com.tvcanaria.enums.Role;
+
 import java.time.LocalDateTime;
 
 public class UserProfileResponse {
@@ -26,7 +28,7 @@ public class UserProfileResponse {
         this.createdAt = user.getCreatedAt();
     }
 
-    private String translateRole(User.Role role) {
+    private String translateRole(Role role) {
         return switch (role) {
             case READER -> "Lector";
             case REPORTER -> "Reportero";

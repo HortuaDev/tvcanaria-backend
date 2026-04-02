@@ -1,6 +1,6 @@
 package com.tvcanaria.dto.user;
 
-import com.tvcanaria.entity.User.Role;
+import com.tvcanaria.enums.Role;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
