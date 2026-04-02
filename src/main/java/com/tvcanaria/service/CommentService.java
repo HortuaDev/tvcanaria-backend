@@ -5,9 +5,10 @@ import com.tvcanaria.dto.comment.CommentResponse;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Comment;
 import com.tvcanaria.entity.CommentReport;
-import com.tvcanaria.entity.ModeratorReporter;
 import com.tvcanaria.entity.User;
 import com.tvcanaria.entity.UserBlock;
+import com.tvcanaria.enums.Role;
+import com.tvcanaria.enums.Status;
 import com.tvcanaria.exception.AccountDisabledException;
 import com.tvcanaria.exception.BadRequestException;
 import com.tvcanaria.exception.DuplicateResourceException;
@@ -33,16 +34,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Servicio para la gestión de comentarios: creación, consulta, moderación y eliminación.
+ * Servicio para la gestión de comentarios: creación, consulta, moderación y
+ * eliminación.
  */
 @Service
 public class CommentService {
 
-    @Autowired private CommentRepository commentRepository;
-    @Autowired private CommentReportRepository commentReportRepository;
-    @Autowired private ArticleRepository articleRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private UserBlockRepository userBlockRepository;
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private CommentReportRepository commentReportRepository;
+    @Autowired
+    private ArticleRepository articleRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserBlockRepository userBlockRepository;
 
     // ------------------- CREATE / REPORT ----------------------
 
@@ -86,7 +93,8 @@ public class CommentService {
     }
 
     /**
-     * Registra un reporte sobre un comentario. Cada usuario solo puede reportarlo una vez.
+     * Registra un reporte sobre un comentario. Cada usuario solo puede reportarlo
+     * una vez.
      * Incrementa el contador de ofensas del comentario.
      *
      * @param commentId identificador del comentario a reportar
@@ -118,7 +126,8 @@ public class CommentService {
     // ------------------- READ ----------------------
 
     /**
-     * Devuelve los comentarios de un artículo ordenados por fecha descendente, paginados.
+     * Devuelve los comentarios de un artículo ordenados por fecha descendente,
+     * paginados.
      *
      * @param articleId identificador del artículo
      * @param pageable  parámetros de paginación
@@ -158,29 +167,38 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public Page<CommentResponse> getReportedComments(String dateFromStr, String dateToStr, int page, int size,
-                                                     String sortBy, String order, Authentication auth) {
+            String sortBy, String order, Authentication auth) {
 
         String sortProperty = "createdAt";
-        if ("alphabetical".equals(sortBy)) sortProperty = "comment";
-        else if ("score".equals(sortBy)) sortProperty = "rating";
+        if ("alphabetical".equals(sortBy))
+            sortProperty = "comment";
+        else if ("score".equals(sortBy))
+            sortProperty = "rating";
 
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
-                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay() : null;
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
         LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
-                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59) : null;
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
 
         User user = getAuthenticatedUser(auth);
 
-        if (user.getRole() == User.Role.ADMIN) {
+        // Admin ve todos, moderador solo los de su reportero asignado
+        if (user.getRole() == Role.ADMIN) {
             return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
                     .map(this::mapToCommentResponse);
         } else {
             return commentRepository.findReportedCommentsByModeratorId(
-                            user.getUserId(), ModeratorReporter.Status.ACCEPTED, dateFrom, dateTo, pageable)
+                    user.getUserId(),
+                    Status.ACCEPTED,
+                    dateFrom,
+                    dateTo,
+                    pageable)
                     .map(this::mapToCommentResponse);
         }
     }
@@ -190,7 +208,8 @@ public class CommentService {
     /**
      * Confirma los reportes de un comentario: marca los reportes como válidos,
      * bloquea temporalmente al autor y elimina el comentario.
-     * Requiere al menos 5 reportes. Solo ADMIN o moderador asignado pueden ejecutarlo.
+     * Requiere al menos 5 reportes. Solo ADMIN o moderador asignado pueden
+     * ejecutarlo.
      *
      * @param commentId identificador del comentario
      * @param auth      usuario autenticado (ADMIN o MODERATOR)
@@ -201,14 +220,21 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
-        if (!user.getRole().equals(User.Role.ADMIN) && !isAssignedModerator(comment, user))
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isAssignedModerator = isAssignedModerator(comment, user);
+
+        if (!isAdmin && !isAssignedModerator) {
             throw new ForbiddenAccessException("No tienes permisos para moderar los comentarios de este artículo");
+        }
 
         if (comment.getOffenseCount() < 5)
             throw new BadRequestException("El comentario debe tener al menos 5 reportes para poder ser sancionado");
 
         List<CommentReport> reports = commentReportRepository.findByComment_CommentId(commentId);
-        reports.forEach(r -> { r.setReviewed(true); r.setValidReport(true); });
+        reports.forEach(r -> {
+            r.setReviewed(true);
+            r.setValidReport(true);
+        });
         commentReportRepository.saveAll(reports);
 
         User offender = comment.getUser();
@@ -239,11 +265,19 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
-        if (!user.getRole().equals(User.Role.ADMIN) && !isAssignedModerator(comment, user))
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isAssignedModerator = isAssignedModerator(comment, user);
+
+        if (!isAdmin && !isAssignedModerator) {
             throw new ForbiddenAccessException("No tienes permisos para moderar los comentarios de este artículo");
+        }
 
         List<CommentReport> reports = commentReportRepository.findByComment_CommentId(commentId);
-        reports.forEach(r -> { r.setReviewed(true); r.setValidReport(false); });
+        reports.forEach(r -> {
+            r.setReviewed(true);
+            r.setValidReport(false);
+        });
+
         commentReportRepository.saveAll(reports);
 
         comment.setOffenseCount(0);
@@ -252,7 +286,8 @@ public class CommentService {
 
     /**
      * Elimina un comentario. Puede hacerlo el propio autor, el ADMIN, el reporter
-     * del artículo o el moderador asignado (estos dos últimos solo si hay ≥5 reportes).
+     * del artículo o el moderador asignado (estos dos últimos solo si hay ≥5
+     * reportes).
      *
      * @param commentId identificador del comentario
      * @param auth      usuario autenticado
@@ -263,12 +298,12 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con ID: " + commentId));
 
-        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAdmin = user.getRole() == Role.ADMIN;
         boolean isCommentAuthor = comment.getUser().getUserId().equals(user.getUserId());
         boolean isReporter = comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
         boolean isAssignedModerator = comment.getArticle().getAuthor().getModeratorRelations().stream()
                 .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
-                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
+                        && mr.getStatus() == Status.ACCEPTED);
         boolean hasEnoughReports = comment.getOffenseCount() >= 5;
 
         if (isAdmin || isCommentAuthor || (hasEnoughReports && (isReporter || isAssignedModerator))) {
@@ -295,7 +330,8 @@ public class CommentService {
     }
 
     /**
-     * Cuenta el número de bloqueos previos de un usuario (usado para escalar la sanción).
+     * Cuenta el número de bloqueos previos de un usuario (usado para escalar la
+     * sanción).
      *
      * @param user usuario a consultar
      * @return número de bloqueos registrados
@@ -305,16 +341,18 @@ public class CommentService {
     }
 
     /**
-     * Comprueba si el usuario es el moderador asignado y aceptado del autor del artículo.
+     * Comprueba si el usuario es el moderador asignado y aceptado del autor del
+     * artículo.
      *
      * @param comment comentario cuyo artículo se evalúa
      * @param user    usuario a verificar
-     * @return {@code true} si es moderador asignado, {@code false} en caso contrario
+     * @return {@code true} si es moderador asignado, {@code false} en caso
+     *         contrario
      */
     private boolean isAssignedModerator(Comment comment, User user) {
         return comment.getArticle().getAuthor().getModeratorRelations().stream()
                 .anyMatch(mr -> mr.getModerator().getUserId().equals(user.getUserId())
-                        && mr.getStatus() == ModeratorReporter.Status.ACCEPTED);
+                        && mr.getStatus() == Status.ACCEPTED);
     }
 
     /**

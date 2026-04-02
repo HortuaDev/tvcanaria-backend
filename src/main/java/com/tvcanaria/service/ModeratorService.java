@@ -5,6 +5,8 @@ import com.tvcanaria.dto.moderator.ModeratorResponse;
 import com.tvcanaria.dto.user.UserSummaryResponse;
 import com.tvcanaria.entity.ModeratorReporter;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.enums.Role;
+import com.tvcanaria.enums.Status;
 import com.tvcanaria.exception.BadRequestException;
 import com.tvcanaria.exception.DuplicateResourceException;
 import com.tvcanaria.exception.ForbiddenAccessException;
@@ -47,23 +49,27 @@ public class ModeratorService {
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId));
 
-        if (moderator.getRole() != User.Role.MODERATOR && moderator.getRole() != User.Role.ADMIN)
+        if (moderator.getRole() != Role.MODERATOR && moderator.getRole() != Role.ADMIN) {
             throw new BadRequestException("El usuario seleccionado no tiene el rol de moderador");
+        }
 
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reportero no encontrado con ID: " + reporterId));
 
-        if (reporter.getRole() != User.Role.REPORTER)
+        if (reporter.getRole() != Role.REPORTER) {
             throw new BadRequestException("El usuario seleccionado no tiene el rol de reportero");
+        }
 
         moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
-                .ifPresent(r -> { throw new DuplicateResourceException("Ya existe una relación entre estos usuarios"); });
+                .ifPresent(r -> {
+                    throw new DuplicateResourceException("Ya existe una relación entre estos usuarios");
+                });
 
         ModeratorReporter relation = new ModeratorReporter();
         relation.setModerator(moderator);
         relation.setReporter(reporter);
-        relation.setStatus(ModeratorReporter.Status.ACCEPTED);
+        relation.setStatus(Status.ACCEPTED);
         moderatorReporterRepository.save(relation);
     }
 
@@ -96,7 +102,7 @@ public class ModeratorService {
             throw new ResourceNotFoundException("Moderador no encontrado con ID: " + moderatorId);
 
         return moderatorReporterRepository
-                .findAcceptedReportersByModerator(moderatorId, ModeratorReporter.Status.ACCEPTED)
+                .findAcceptedReportersByModerator(moderatorId, Status.ACCEPTED)
                 .stream().map(this::mapToUserSummary).collect(Collectors.toList());
     }
 
@@ -112,12 +118,13 @@ public class ModeratorService {
             throw new ResourceNotFoundException("Reportero no encontrado con ID: " + reporterId);
 
         return moderatorReporterRepository
-                .findAcceptedModeratorsByReporter(reporterId, ModeratorReporter.Status.ACCEPTED)
+                .findAcceptedModeratorsByReporter(reporterId, Status.ACCEPTED)
                 .stream().map(this::mapToUserSummary).collect(Collectors.toList());
     }
 
     /**
-     * Devuelve las solicitudes de moderación pendientes dirigidas al usuario autenticado.
+     * Devuelve las solicitudes de moderación pendientes dirigidas al usuario
+     * autenticado.
      *
      * @param auth usuario autenticado (destinatario de las solicitudes)
      * @return lista de solicitudes pendientes
@@ -126,12 +133,13 @@ public class ModeratorService {
     public List<ModeratorResponse> getPendingRequests(Authentication auth) {
         Integer moderatorId = getAuthenticatedUserId(auth);
         return moderatorReporterRepository
-                .findByModerator_UserIdAndStatus(moderatorId, ModeratorReporter.Status.PENDING)
+                .findByModerator_UserIdAndStatus(moderatorId, Status.PENDING)
                 .stream().map(ModeratorResponse::new).collect(Collectors.toList());
     }
 
     /**
-     * Indica si el usuario autenticado es el moderador aceptado de un reporter concreto.
+     * Indica si el usuario autenticado es el moderador aceptado de un reporter
+     * concreto.
      *
      * @param auth       usuario autenticado
      * @param reporterId identificador del reporter
@@ -142,12 +150,13 @@ public class ModeratorService {
         Integer moderatorId = getAuthenticatedUserId(auth);
         return moderatorReporterRepository
                 .findByModerator_UserIdAndReporter_UserId(moderatorId, reporterId)
-                .map(r -> r.getStatus() == ModeratorReporter.Status.ACCEPTED)
+                .map(r -> r.getStatus() == Status.ACCEPTED)
                 .orElse(false);
     }
 
     /**
-     * Devuelve todas las solicitudes de moderación enviadas por el reporter autenticado.
+     * Devuelve todas las solicitudes de moderación enviadas por el reporter
+     * autenticado.
      *
      * @param auth usuario autenticado (reporter)
      * @return lista de solicitudes del reporter
@@ -209,12 +218,12 @@ public class ModeratorService {
 
         if (existingRelation.isPresent()) {
             ModeratorReporter relation = existingRelation.get();
-            if (relation.getStatus() == ModeratorReporter.Status.PENDING)
+            if (relation.getStatus() == Status.PENDING) {
                 throw new DuplicateResourceException("Ya existe una solicitud pendiente con este usuario.");
-            else if (relation.getStatus() == ModeratorReporter.Status.ACCEPTED)
+            } else if (relation.getStatus() == Status.ACCEPTED) {
                 throw new DuplicateResourceException("Este usuario ya es tu moderador.");
-            else if (relation.getStatus() == ModeratorReporter.Status.REJECTED) {
-                relation.setStatus(ModeratorReporter.Status.PENDING);
+            } else if (relation.getStatus() == Status.REJECTED) {
+                relation.setStatus(Status.PENDING);
                 moderatorReporterRepository.save(relation);
                 return;
             }
@@ -223,7 +232,7 @@ public class ModeratorService {
         ModeratorReporter moderatorReporter = new ModeratorReporter();
         moderatorReporter.setReporter(reporter);
         moderatorReporter.setModerator(moderator);
-        moderatorReporter.setStatus(ModeratorReporter.Status.PENDING);
+        moderatorReporter.setStatus(Status.PENDING);
         moderatorReporterRepository.save(moderatorReporter);
     }
 
@@ -243,12 +252,12 @@ public class ModeratorService {
         if (!request.getModerator().getUserId().equals(moderatorId))
             throw new ForbiddenAccessException("No tienes permisos para aceptar esta solicitud");
 
-        request.setStatus(ModeratorReporter.Status.ACCEPTED);
+        request.setStatus(Status.ACCEPTED);
         moderatorReporterRepository.save(request);
 
         User moderator = request.getModerator();
-        if (moderator.getRole() == User.Role.READER) {
-            moderator.setRole(User.Role.MODERATOR);
+        if (moderator.getRole() == Role.READER) {
+            moderator.setRole(Role.MODERATOR);
             userRepository.save(moderator);
         }
     }
@@ -268,7 +277,7 @@ public class ModeratorService {
         if (!request.getModerator().getUserId().equals(moderatorId))
             throw new ForbiddenAccessException("No tienes permisos para rechazar esta solicitud");
 
-        request.setStatus(ModeratorReporter.Status.REJECTED);
+        request.setStatus(Status.REJECTED);
         moderatorReporterRepository.save(request);
     }
 

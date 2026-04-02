@@ -8,6 +8,7 @@ import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.dto.auth.LoginRequest;
 import com.tvcanaria.dto.auth.RegisterRequest;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.enums.Role;
 import com.tvcanaria.exception.*;
 import com.tvcanaria.repository.UserRepository;
 import com.tvcanaria.security.JwtTokenProvider;
@@ -49,7 +50,7 @@ public class AuthService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(User.Role.READER);
+        user.setRole(Role.READER);
         user.setAuthProvider("LOCAL");
         user.setIsActive(true);
 

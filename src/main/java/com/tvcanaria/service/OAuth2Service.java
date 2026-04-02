@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tvcanaria.dto.auth.AuthResponse;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.enums.Role;
 import com.tvcanaria.exception.AccountDisabledException;
 import com.tvcanaria.exception.ExternalServiceException;
 import com.tvcanaria.exception.InvalidCredentialsException;
@@ -138,7 +139,7 @@ public class OAuth2Service {
                                 newUser.setAuthProvider("GOOGLE");
                                 newUser.setProviderId(googleId);
                                 newUser.setPasswordHash("OAUTH2_USER");
-                                newUser.setRole(User.Role.READER);
+                                newUser.setRole(Role.READER);
                                 newUser.setIsActive(true);
                                 return userRepository.save(newUser);
                             });

@@ -24,13 +24,15 @@ import com.tvcanaria.dto.article.ArticleUploadRequest;
 import com.tvcanaria.entity.Article;
 import com.tvcanaria.entity.Category;
 import com.tvcanaria.entity.User;
+import com.tvcanaria.enums.Role;
 import com.tvcanaria.exception.ForbiddenAccessException;
 import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.ArticleRepository;
 import com.tvcanaria.repository.UserRepository;
 
 /**
- * Servicio para la gestión de artículos: creación, consulta, edición y eliminación.
+ * Servicio para la gestión de artículos: creación, consulta, edición y
+ * eliminación.
  */
 @Service
 public class ArticleService {
@@ -53,7 +55,8 @@ public class ArticleService {
      * Crea un nuevo artículo subiendo el vídeo a Cloudinary.
      * Admite hasta 5 categorías; lanza excepción si se superan.
      *
-     * @param request datos del artículo (título, descripción, localización, vídeo, categorías)
+     * @param request datos del artículo (título, descripción, localización, vídeo,
+     *                categorías)
      * @param auth    usuario autenticado (autor del artículo)
      * @return el artículo creado
      */
@@ -145,7 +148,8 @@ public class ArticleService {
     }
 
     /**
-     * Devuelve los artículos del usuario autenticado con filtros opcionales de fecha,
+     * Devuelve los artículos del usuario autenticado con filtros opcionales de
+     * fecha,
      * categorías y palabra clave. ADMIN ve todos; REPORTER solo los suyos.
      *
      * @param dateFromStr fecha de inicio (yyyy-MM-dd, opcional)
@@ -166,17 +170,21 @@ public class ArticleService {
         User user = getAuthenticatedUser(auth);
 
         String sortProperty = "createdAt";
-        if ("alphabetical".equals(sortBy)) sortProperty = "title";
-        else if ("score".equals(sortBy)) sortProperty = "rating";
+        if ("alphabetical".equals(sortBy))
+            sortProperty = "title";
+        else if ("score".equals(sortBy))
+            sortProperty = "rating";
 
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
-                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay() : null;
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
         LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
-                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59) : null;
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
 
         List<String> safeCategories = (categories != null && !categories.isEmpty()) ? categories : null;
         String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
@@ -188,7 +196,8 @@ public class ArticleService {
     }
 
     /**
-     * Devuelve hasta 20 artículos recientes de las categorías favoritas del usuario.
+     * Devuelve hasta 20 artículos recientes de las categorías favoritas del
+     * usuario.
      * Si no tiene favoritas, devuelve los 20 artículos más recientes visibles.
      *
      * @param auth usuario autenticado
@@ -267,7 +276,8 @@ public class ArticleService {
     }
 
     /**
-     * Actualiza los campos editables de un artículo (título, descripción, localización,
+     * Actualiza los campos editables de un artículo (título, descripción,
+     * localización,
      * visibilidad y categorías). Solo el autor o un ADMIN pueden realizarlo.
      * Las categorías no pueden superar 5.
      *
@@ -356,11 +366,14 @@ public class ArticleService {
      * @param user    usuario que realiza la acción
      */
     private void checkPermission(Article article, User user) {
-        boolean isAdmin = user.getRole() == User.Role.ADMIN;
+        boolean isAdmin = user.getRole() == Role.ADMIN;
         boolean isAuthor = article.getAuthor().getUserId().equals(user.getUserId());
 
-        if (isAdmin) return;
-        if (user.getRole() == User.Role.REPORTER && isAuthor) return;
+        if (isAdmin)
+            return;
+
+        if (user.getRole() == Role.REPORTER && isAuthor)
+            return;
 
         throw new ForbiddenAccessException("No tiene permisos para modificar o eliminar este artículo");
     }

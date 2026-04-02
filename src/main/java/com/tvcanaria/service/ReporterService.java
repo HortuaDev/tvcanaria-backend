@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.tvcanaria.dto.profile.ReporterProfileResponse;
 import com.tvcanaria.entity.User;
-import com.tvcanaria.entity.User.Role;
+import com.tvcanaria.enums.Role;
 import com.tvcanaria.exception.ForbiddenAccessException;
 import com.tvcanaria.exception.ResourceNotFoundException;
 import com.tvcanaria.repository.UserRepository;
@@ -37,7 +37,7 @@ public class ReporterService {
                     "El usuario no es reportero o administrador, no tiene un perfil público.");
         }
 
-        return new ReporterProfileResponse(
-                user.getUsername(), user.getFirstName(), user.getLastName(), user.getCreatedAt());
+        return new ReporterProfileResponse(user.getUsername(), user.getFirstName(), user.getLastName(),
+                user.getCreatedAt());
     }
 }

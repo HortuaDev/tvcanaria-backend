@@ -1,7 +1,7 @@
 package com.tvcanaria.repository;
 
 import com.tvcanaria.entity.Comment;
-import com.tvcanaria.entity.ModeratorReporter;
+import com.tvcanaria.enums.Status;
 
 import java.time.LocalDateTime;
 
@@ -35,7 +35,7 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
                         "AND (CAST(:dateTo AS timestamp) IS NULL OR c.createdAt <= :dateTo)")
         Page<Comment> findReportedCommentsByModeratorId(
                         @Param("moderatorId") Integer moderatorId,
-                        @Param("status") ModeratorReporter.Status status,
+                        @Param("status") Status status,
                         @Param("dateFrom") LocalDateTime dateFrom,
                         @Param("dateTo") LocalDateTime dateTo,
                         Pageable pageable);
