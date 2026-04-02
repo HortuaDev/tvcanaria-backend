@@ -29,8 +29,8 @@ public class CommentController {
     /**
      * Crea un nuevo comentario en un artículo.
      *
-     * @param commentRequest  datos del comentario (articleId y contenido)
-     * @param authentication  usuario autenticado
+     * @param commentRequest datos del comentario (articleId y contenido)
+     * @param authentication usuario autenticado
      * @return {@code 201 Created} con el comentario creado
      */
     @PostMapping
@@ -45,8 +45,8 @@ public class CommentController {
     /**
      * Reporta un comentario como inapropiado.
      *
-     * @param commentId       identificador del comentario a reportar
-     * @param authentication  usuario autenticado
+     * @param commentId      identificador del comentario a reportar
+     * @param authentication usuario autenticado
      * @return {@code 200 OK}
      */
     @PostMapping("/{commentId}/report")
@@ -61,8 +61,8 @@ public class CommentController {
     /**
      * Devuelve los comentarios de un artículo de forma paginada.
      *
-     * @param articleId  identificador del artículo
-     * @param pageable   parámetros de paginación y ordenación
+     * @param articleId identificador del artículo
+     * @param pageable  parámetros de paginación y ordenación
      * @return {@code 200 OK} con página de comentarios
      */
     @GetMapping("/article/{articleId}")
@@ -98,7 +98,7 @@ public class CommentController {
      * @return {@code 200 OK} con página de comentarios reportados
      */
     @GetMapping("/reported")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR') or hasAuthority('REPORTER')")
     public ResponseEntity<Page<CommentResponse>> getReportedComments(
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo,
@@ -117,8 +117,8 @@ public class CommentController {
     /**
      * Aprueba un comentario reportado, rechazando los reportes asociados.
      *
-     * @param commentId       identificador del comentario
-     * @param authentication  usuario autenticado (ADMIN o MODERATOR)
+     * @param commentId      identificador del comentario
+     * @param authentication usuario autenticado (ADMIN o MODERATOR)
      * @return {@code 200 OK} con mensaje de confirmación
      */
     @PutMapping("/{commentId}/approve")
@@ -131,8 +131,8 @@ public class CommentController {
     /**
      * Rechaza un comentario reportado, confirmando los reportes asociados.
      *
-     * @param commentId       identificador del comentario
-     * @param authentication  usuario autenticado (ADMIN o MODERATOR)
+     * @param commentId      identificador del comentario
+     * @param authentication usuario autenticado (ADMIN o MODERATOR)
      * @return {@code 200 OK} con mensaje de confirmación
      */
     @PutMapping("/{commentId}/reject")
@@ -145,10 +145,11 @@ public class CommentController {
     // ------------------- DELETE ----------------------
 
     /**
-     * Elimina un comentario. El usuario solo puede borrar los suyos; ADMIN puede borrar cualquiera.
+     * Elimina un comentario. El usuario solo puede borrar los suyos; ADMIN puede
+     * borrar cualquiera.
      *
-     * @param commentId       identificador del comentario
-     * @param authentication  usuario autenticado
+     * @param commentId      identificador del comentario
+     * @param authentication usuario autenticado
      * @return {@code 204 No Content}
      */
     @DeleteMapping("/{commentId}")
