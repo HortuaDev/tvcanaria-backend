@@ -13,8 +13,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "comment_report", uniqueConstraints = @UniqueConstraint(columnNames = { "comment_id", "user_id" }))
 public class CommentReport {
 
@@ -42,54 +46,6 @@ public class CommentReport {
     @PrePersist
     void onCreate() {
         createdAt = LocalDateTime.now();
-    }
-
-    public Integer getReportId() {
-        return reportId;
-    }
-
-    public void setReportId(Integer reportId) {
-        this.reportId = reportId;
-    }
-
-    public Comment getComment() {
-        return comment;
-    }
-
-    public void setComment(Comment comment) {
-        this.comment = comment;
-    }
-
-    public User getReporter() {
-        return reporter;
-    }
-
-    public void setReporter(User reporter) {
-        this.reporter = reporter;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Boolean getReviewed() {
-        return reviewed;
-    }
-
-    public void setReviewed(Boolean reviewed) {
-        this.reviewed = reviewed;
-    }
-
-    public Boolean getValidReport() {
-        return validReport;
-    }
-
-    public void setValidReport(Boolean validReport) {
-        this.validReport = validReport;
     }
 
 }

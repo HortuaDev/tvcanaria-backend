@@ -1,9 +1,23 @@
 package com.tvcanaria.entity;
 
-import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+
 @Entity
+@Getter
+@Setter
 @Table(name = "user_block")
 public class UserBlock {
 
@@ -30,46 +44,6 @@ public class UserBlock {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-    }
-
-    public Integer getBlockId() {
-        return blockId;
-    }
-
-    public void setBlockId(Integer blockId) {
-        this.blockId = blockId;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getBlockedUntil() {
-        return blockedUntil;
-    }
-
-    public void setBlockedUntil(LocalDateTime blockedUntil) {
-        this.blockedUntil = blockedUntil;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
 }
