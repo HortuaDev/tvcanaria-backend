@@ -14,6 +14,9 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.tvcanaria.exception.ExternalServiceException;
 
+/**
+ * Servicio para la gestión de vídeos en Cloudinary.
+ */
 @Service
 public class CloudinaryService {
 
@@ -22,6 +25,12 @@ public class CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
+    /**
+     * Sube un archivo de vídeo a Cloudinary.
+     *
+     * @param file archivo de vídeo a subir
+     * @return mapa con los metadatos de la subida (incluye {@code secure_url}, {@code public_id}, etc.)
+     */
     @SuppressWarnings("unchecked")
     public Map<String, Object> uploadVideo(MultipartFile file) {
         try {
@@ -34,7 +43,10 @@ public class CloudinaryService {
     }
 
     /**
-     * Elimina un video de Cloudinary a partir de su URL completa
+     * Elimina un vídeo de Cloudinary de forma asíncrona a partir de su URL.
+     * Los errores se registran en el log pero no interrumpen la ejecución.
+     *
+     * @param videoUrl URL completa del vídeo en Cloudinary
      */
     @Async
     public void deleteVideoByUrl(String videoUrl) {
@@ -46,38 +58,33 @@ public class CloudinaryService {
 
         if (publicId != null) {
             try {
-                // Cloudinary necesita el public_id y especificar que es un video
                 cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "video"));
                 logger.info("Vídeo eliminado exitosamente de Cloudinary en segundo plano: {}", publicId);
-
             } catch (IOException e) {
-                // Registramos el error en los logs del servidor para revisarlo después,
-                // pero no rompemos la ejecución ni lanzamos excepciones.
                 logger.error("Error asíncrono al intentar eliminar el vídeo en Cloudinary: {}", videoUrl, e);
             }
         }
     }
 
     /**
-     * Extrae el public_id de una URL de Cloudinary.
-     * Ejemplo URL:
-     * https://res.cloudinary.com/demo/video/upload/v1612345/carpeta/mi_video.mp4
-     * Resultado: carpeta/mi_video
+     * Extrae el {@code public_id} de una URL de Cloudinary eliminando la versión y la extensión.
+     * Ejemplo: {@code https://res.cloudinary.com/demo/video/upload/v1612345/carpeta/mi_video.mp4}
+     * → {@code carpeta/mi_video}
+     *
+     * @param url URL completa del recurso en Cloudinary
+     * @return el {@code public_id} extraído, o {@code null} si la URL no tiene el formato esperado
      */
     private String extractPublicIdFromUrl(String url) {
         int uploadIndex = url.indexOf("/upload/");
         if (uploadIndex == -1)
             return null;
 
-        // Cortamos todo lo que está antes de /upload/
         String path = url.substring(uploadIndex + 8);
 
-        // Si la URL tiene versión (v1234567/), la saltamos
         if (path.matches("^v\\d+/.*")) {
             path = path.substring(path.indexOf("/") + 1);
         }
 
-        // Quitamos la extensión del archivo (.mp4, .mov, etc)
         int dotIndex = path.lastIndexOf(".");
         if (dotIndex != -1) {
             path = path.substring(0, dotIndex);
