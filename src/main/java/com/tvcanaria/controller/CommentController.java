@@ -13,6 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para la gestión de comentarios.
+ * Base path: /api/comments
+ */
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
@@ -22,6 +26,13 @@ public class CommentController {
 
     // ------------------- POST ----------------------
 
+    /**
+     * Crea un nuevo comentario en un artículo.
+     *
+     * @param commentRequest  datos del comentario (articleId y contenido)
+     * @param authentication  usuario autenticado
+     * @return {@code 201 Created} con el comentario creado
+     */
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CommentResponse> createComment(
@@ -31,6 +42,13 @@ public class CommentController {
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 
+    /**
+     * Reporta un comentario como inapropiado.
+     *
+     * @param commentId       identificador del comentario a reportar
+     * @param authentication  usuario autenticado
+     * @return {@code 200 OK}
+     */
     @PostMapping("/{commentId}/report")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> reportComment(@PathVariable Integer commentId, Authentication authentication) {
@@ -40,6 +58,13 @@ public class CommentController {
 
     // ------------------- GET ----------------------
 
+    /**
+     * Devuelve los comentarios de un artículo de forma paginada.
+     *
+     * @param articleId  identificador del artículo
+     * @param pageable   parámetros de paginación y ordenación
+     * @return {@code 200 OK} con página de comentarios
+     */
     @GetMapping("/article/{articleId}")
     public ResponseEntity<Page<CommentResponse>> getCommentsByArticle(
             @PathVariable Integer articleId,
@@ -48,12 +73,30 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
+    /**
+     * Devuelve todos los comentarios de forma paginada.
+     *
+     * @param pageable parámetros de paginación y ordenación
+     * @return {@code 200 OK} con página de comentarios
+     */
     @GetMapping
     public ResponseEntity<Page<CommentResponse>> getAllComments(Pageable pageable) {
         Page<CommentResponse> comments = commentService.getComments(pageable);
         return ResponseEntity.ok(comments);
     }
 
+    /**
+     * Devuelve los comentarios reportados con filtros opcionales.
+     * Solo accesible por ADMIN o MODERATOR.
+     *
+     * @param dateFrom fecha de inicio (yyyy-MM-dd, opcional)
+     * @param dateTo   fecha de fin (yyyy-MM-dd, opcional)
+     * @param page     número de página (por defecto 0)
+     * @param size     tamaño de página (por defecto 10)
+     * @param sortBy   campo de ordenación (por defecto "date")
+     * @param order    dirección de ordenación: "asc" o "desc"
+     * @return {@code 200 OK} con página de comentarios reportados
+     */
     @GetMapping("/reported")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     public ResponseEntity<Page<CommentResponse>> getReportedComments(
@@ -64,7 +107,6 @@ public class CommentController {
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String order,
             Authentication authentication) {
-
         Page<CommentResponse> comments = commentService.getReportedComments(
                 dateFrom, dateTo, page, size, sortBy, order, authentication);
         return ResponseEntity.ok(comments);
@@ -72,6 +114,13 @@ public class CommentController {
 
     // ------------------- PUT ----------------------
 
+    /**
+     * Aprueba un comentario reportado, rechazando los reportes asociados.
+     *
+     * @param commentId       identificador del comentario
+     * @param authentication  usuario autenticado (ADMIN o MODERATOR)
+     * @return {@code 200 OK} con mensaje de confirmación
+     */
     @PutMapping("/{commentId}/approve")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     public ResponseEntity<String> approveComment(@PathVariable Integer commentId, Authentication authentication) {
@@ -79,6 +128,13 @@ public class CommentController {
         return ResponseEntity.ok("Comentario aprobado y reportes rechazados");
     }
 
+    /**
+     * Rechaza un comentario reportado, confirmando los reportes asociados.
+     *
+     * @param commentId       identificador del comentario
+     * @param authentication  usuario autenticado (ADMIN o MODERATOR)
+     * @return {@code 200 OK} con mensaje de confirmación
+     */
     @PutMapping("/{commentId}/reject")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
     public ResponseEntity<String> rejectComment(@PathVariable Integer commentId, Authentication authentication) {
@@ -88,6 +144,13 @@ public class CommentController {
 
     // ------------------- DELETE ----------------------
 
+    /**
+     * Elimina un comentario. El usuario solo puede borrar los suyos; ADMIN puede borrar cualquiera.
+     *
+     * @param commentId       identificador del comentario
+     * @param authentication  usuario autenticado
+     * @return {@code 204 No Content}
+     */
     @DeleteMapping("/{commentId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteComment(@PathVariable Integer commentId, Authentication authentication) {
