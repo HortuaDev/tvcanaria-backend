@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/articles/my-articles")
                         .hasAnyAuthority("ADMIN", "REPORTER")
                         .requestMatchers(HttpMethod.GET, "/api/articles/recommended").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/articles/upload").hasAnyAuthority("ADMIN", "REPORTER")
+                        .requestMatchers(HttpMethod.POST, "/api/articles/upload").hasAnyAuthority("REPORTER")
                         .requestMatchers(HttpMethod.PUT, "/api/articles/**").hasAnyAuthority("ADMIN", "REPORTER")
                         .requestMatchers(HttpMethod.DELETE, "/api/articles/{id}").hasAnyAuthority("ADMIN", "REPORTER")
                         .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
