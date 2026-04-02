@@ -21,6 +21,10 @@ import com.tvcanaria.security.JwtTokenProvider;
 
 import java.util.Collections;
 
+/**
+ * Servicio para la autenticación de usuarios mediante Google OAuth2.
+ * Soporta tanto el flujo web tradicional como el flujo móvil (idToken).
+ */
 @Service
 public class OAuth2Service {
 
@@ -34,7 +38,11 @@ public class OAuth2Service {
     private String googleClientId;
 
     /**
-     * Método para manejar login desde OAuth2 web tradicional (usado por el handler)
+     * Procesa el login OAuth2 web tradicional a partir del usuario ya autenticado por Spring Security.
+     * Crea el usuario si no existe. Rechaza el acceso si la cuenta está desactivada.
+     *
+     * @param oAuth2User usuario autenticado por Google (atributos: email, sub, given_name, family_name)
+     * @return token JWT y datos básicos del usuario
      */
     @Transactional
     public AuthResponse processGoogleUser(OAuth2User oAuth2User) {
@@ -45,30 +53,29 @@ public class OAuth2Service {
 
         User user = findOrCreateGoogleUser(email, googleId, firstName, lastName);
 
-        // Seguridad: Evitar que usuarios baneados entren usando Google Login
         if (!user.getIsActive()) {
             throw new AccountDisabledException("Tu cuenta ha sido desactivada. Contacta al administrador");
         }
 
         String token = jwtTokenProvider.generateToken(user);
 
-        return new AuthResponse(
-                token,
-                user.getUserId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole().name());
+        return new AuthResponse(token, user.getUserId(), user.getUsername(),
+                user.getEmail(), user.getRole().name());
     }
 
     /**
-     * Método para manejar login desde React Native/Expo (recibe idToken)
+     * Autentica a un usuario mediante un {@code idToken} de Google (flujo móvil / React Native).
+     * Verifica la firma y audiencia del token antes de procesar al usuario.
+     * Crea el usuario si no existe. Rechaza el acceso si la cuenta está desactivada.
+     *
+     * @param idTokenString token de identidad emitido por Google
+     * @return token JWT y datos básicos del usuario
      */
     @Transactional
     public AuthResponse authenticateGoogleToken(String idTokenString) {
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(),
-                    GsonFactory.getDefaultInstance())
+                    new NetHttpTransport(), GsonFactory.getDefaultInstance())
                     .setAudience(Collections.singletonList(googleClientId))
                     .build();
 
@@ -79,7 +86,6 @@ public class OAuth2Service {
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
-
             String email = payload.getEmail();
             String googleId = payload.getSubject();
             String firstName = (String) payload.get("given_name");
@@ -87,32 +93,32 @@ public class OAuth2Service {
 
             User user = findOrCreateGoogleUser(email, googleId, firstName, lastName);
 
-            // Seguridad: Evitar que usuarios baneados entren usando Google Login
             if (!user.getIsActive()) {
                 throw new AccountDisabledException("Tu cuenta ha sido desactivada. Contacta al administrador");
             }
 
             String token = jwtTokenProvider.generateToken(user);
 
-            return new AuthResponse(
-                    token,
-                    user.getUserId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getRole().name());
+            return new AuthResponse(token, user.getUserId(), user.getUsername(),
+                    user.getEmail(), user.getRole().name());
 
         } catch (InvalidCredentialsException | AccountDisabledException e) {
-
             throw e;
         } catch (Exception e) {
-
             throw new ExternalServiceException(
                     "Error conectando con los servidores de Google para validar la identidad");
         }
     }
 
     /**
-     * Método privado compartido para buscar o crear usuario de Google
+     * Busca un usuario por {@code googleId} o email; si no existe, lo crea con rol READER.
+     * Si ya existe por email con otro proveedor, actualiza sus datos de Google.
+     *
+     * @param email     email del usuario
+     * @param googleId  identificador único de Google (subject)
+     * @param firstName nombre de pila
+     * @param lastName  apellidos
+     * @return entidad {@link User} encontrada o creada
      */
     private User findOrCreateGoogleUser(String email, String googleId, String firstName, String lastName) {
         return userRepository.findByProviderId(googleId)
@@ -139,6 +145,13 @@ public class OAuth2Service {
                 });
     }
 
+    /**
+     * Genera un nombre de usuario único a partir del prefijo del email.
+     * Añade un sufijo numérico incremental si el username ya está en uso.
+     *
+     * @param email email del usuario
+     * @return nombre de usuario único
+     */
     private String generateUsername(String email) {
         String baseUsername = email.split("@")[0];
         String username = baseUsername;
