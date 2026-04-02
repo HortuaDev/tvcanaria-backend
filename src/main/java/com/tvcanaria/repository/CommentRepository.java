@@ -39,4 +39,16 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
                         @Param("dateFrom") LocalDateTime dateFrom,
                         @Param("dateTo") LocalDateTime dateTo,
                         Pageable pageable);
+
+        @Query("SELECT c FROM Comment c " +
+                        "JOIN c.article a " +
+                        "WHERE c.offenseCount >= 1 " +
+                        "AND a.author.userId = :reporterId " +
+                        "AND (CAST(:dateFrom AS timestamp) IS NULL OR c.createdAt >= :dateFrom) " +
+                        "AND (CAST(:dateTo AS timestamp) IS NULL OR c.createdAt <= :dateTo)")
+        Page<Comment> findReportedCommentsByReporterId(
+                        @Param("reporterId") Integer reporterId,
+                        @Param("dateFrom") LocalDateTime dateFrom,
+                        @Param("dateTo") LocalDateTime dateTo,
+                        Pageable pageable);
 }
