@@ -188,17 +188,19 @@ public class CommentService {
 
         User user = getAuthenticatedUser(auth);
 
-        // Admin ve todos, moderador solo los de su reportero asignado
         if (user.getRole() == Role.ADMIN) {
             return commentRepository.findReportedCommentsWithFilters(dateFrom, dateTo, pageable)
                     .map(this::mapToCommentResponse);
+
+        } else if (user.getRole() == Role.REPORTER) {
+            return commentRepository.findReportedCommentsByReporterId(
+                    user.getUserId(), dateFrom, dateTo, pageable)
+                    .map(this::mapToCommentResponse);
+
         } else {
+            // MODERATOR
             return commentRepository.findReportedCommentsByModeratorId(
-                    user.getUserId(),
-                    Status.ACCEPTED,
-                    dateFrom,
-                    dateTo,
-                    pageable)
+                    user.getUserId(), Status.ACCEPTED, dateFrom, dateTo, pageable)
                     .map(this::mapToCommentResponse);
         }
     }
