@@ -33,7 +33,8 @@ public class UserController {
     // ------------------- LECTURA PÚBLICA / BÚSQUEDA ----------------------
 
     /**
-     * Devuelve todos los usuarios paginados con filtros opcionales. Solo accesible por ADMIN.
+     * Devuelve todos los usuarios paginados con filtros opcionales. Solo accesible
+     * por ADMIN.
      *
      * @param search   término de búsqueda por nombre o email (opcional)
      * @param sortBy   campo de ordenación (por defecto "createdAt")
@@ -157,6 +158,22 @@ public class UserController {
             @PathVariable Integer id,
             @RequestParam(required = false) String reason) {
         UserProfileResponse updatedUser = userService.toggleUserStatus(id, reason);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    /**
+     * Activa o desactiva la cuenta de un usuario (el usuario mismo desde su
+     * perfil).
+     *
+     * @param id identificador del usuario.
+     * @param auth usuario autenticado.
+     * @return {@code 200 OK} con el perfil actualizado.
+     */
+    @PutMapping("/{id}/toggle-status-profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserProfileResponse> toggleUserStatusProfile(
+            @PathVariable Integer id, Authentication auth) {
+        UserProfileResponse updatedUser = userService.toggleUserStatusProfile(id, auth);
         return ResponseEntity.ok(updatedUser);
     }
 }
