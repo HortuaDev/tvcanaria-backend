@@ -35,15 +35,20 @@ import com.tvcanaria.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
 /**
- * Servicio para la gestión de usuarios: perfil, categorías, búsquedas y administración.
+ * Servicio para la gestión de usuarios: perfil, categorías, búsquedas y
+ * administración.
  */
 @Service
 public class UserService {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private CategoryService categoryService;
-    @Autowired private UserBlockRepository userBlockRepository;
-    @Autowired private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private CategoryService categoryService;
+    @Autowired
+    private UserBlockRepository userBlockRepository;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     // ------------------- PERFIL Y USUARIO AUTENTICADO ----------------------
 
@@ -69,8 +74,10 @@ public class UserService {
     public UserProfileResponse updateUserProfile(Authentication auth, UpdateProfileRequest request) {
         User user = findUserById(getAuthenticatedUserId(auth));
 
-        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-        if (request.getLastName() != null)  user.setLastName(request.getLastName());
+        if (request.getFirstName() != null)
+            user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null)
+            user.setLastName(request.getLastName());
 
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail()))
@@ -93,7 +100,8 @@ public class UserService {
     }
 
     /**
-     * Actualiza las categorías favoritas de un usuario. Solo puede modificar las suyas propias.
+     * Actualiza las categorías favoritas de un usuario. Solo puede modificar las
+     * suyas propias.
      * El máximo permitido es 5 categorías.
      *
      * @param targetUserId identificador del usuario a modificar
@@ -103,7 +111,7 @@ public class UserService {
      */
     @Transactional
     public Set<CategoryResponse> updateUserCategories(Integer targetUserId, Set<Integer> categoryIds,
-                                                      Authentication auth) {
+            Authentication auth) {
         Integer authenticatedUserId = getAuthenticatedUserId(auth);
 
         if (!targetUserId.equals(authenticatedUserId))
@@ -120,6 +128,41 @@ public class UserService {
         return categories.stream().map(CategoryResponse::new).collect(Collectors.toSet());
     }
 
+    @Transactional
+    public UserProfileResponse toggleUserStatusProfile(Integer userId, Authentication auth) {
+
+        Integer authenticatedUserId = getAuthenticatedUserId(auth);
+
+        if (!userId.equals(authenticatedUserId)) {
+            throw new ForbiddenAccessException("No puedes darte de baja con otra cuenta");
+        }
+
+        User user = findUserById(userId);
+
+        if (user.getIsActive()) {
+            user.setIsActive(false);
+
+            UserBlock block = new UserBlock();
+            block.setUser(user);
+            block.setReason("Baja voluntaria del usuario");
+            block.setBlockedUntil(null);
+
+            userBlockRepository.save(block);
+            user.setUserBlock(block);
+
+        } else {
+            user.setIsActive(true);
+
+            UserBlock existingBlock = user.getUserBlock();
+            if (existingBlock != null) {
+                user.setUserBlock(null);
+                userBlockRepository.delete(existingBlock);
+            }
+        }
+
+        return new UserProfileResponse(userRepository.save(user));
+    }
+
     // ------------------- BÚSQUEDAS Y LISTADOS ----------------------
 
     /**
@@ -133,20 +176,21 @@ public class UserService {
     }
 
     /**
-     * Busca usuarios paginados con filtros opcionales de texto, fechas y ordenación.
+     * Busca usuarios paginados con filtros opcionales de texto, fechas y
+     * ordenación.
      * Lanza excepción si el formato de fecha es inválido.
      *
-     * @param query      término de búsqueda por nombre o email (opcional)
-     * @param sortBy     campo de ordenación ("alphabetical" o "createdAt")
-     * @param order      dirección: "asc" o "desc"
+     * @param query       término de búsqueda por nombre o email (opcional)
+     * @param sortBy      campo de ordenación ("alphabetical" o "createdAt")
+     * @param order       dirección: "asc" o "desc"
      * @param dateFromStr fecha de registro desde (yyyy-MM-dd, opcional)
      * @param dateToStr   fecha de registro hasta (yyyy-MM-dd, opcional)
-     * @param page       número de página
-     * @param size       tamaño de página
+     * @param page        número de página
+     * @param size        tamaño de página
      * @return página de usuarios que cumplen los filtros
      */
     public Page<UserProfileResponse> searchUsers(String query, String sortBy, String order,
-                                                 String dateFromStr, String dateToStr, int page, int size) {
+            String dateFromStr, String dateToStr, int page, int size) {
 
         String sortProperty = "alphabetical".equals(sortBy) ? "username" : "createdAt";
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -154,7 +198,7 @@ public class UserService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime dateFrom = null;
-        LocalDateTime dateTo   = null;
+        LocalDateTime dateTo = null;
 
         try {
             if (dateFromStr != null && !dateFromStr.trim().isEmpty())
@@ -178,7 +222,8 @@ public class UserService {
 
     /**
      * Activa o desactiva la cuenta de un usuario.
-     * Al desactivar, registra un bloqueo indefinido. Al activar, elimina el bloqueo existente.
+     * Al desactivar, registra un bloqueo indefinido. Al activar, elimina el bloqueo
+     * existente.
      *
      * @param userId identificador del usuario
      * @param reason motivo del bloqueo (opcional, solo al desactivar)
