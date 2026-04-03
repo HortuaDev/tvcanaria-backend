@@ -49,3 +49,6 @@ out/
 .DS_Store
 Thumbs.db
 HELP.md
+
+# --- ENV ---
+.env
