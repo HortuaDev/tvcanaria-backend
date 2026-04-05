@@ -32,9 +32,13 @@ public class ArticleUploadRequest {
     @Size(max = 100, message = "La ubicación no puede superar 100 caracteres")
     private String location;
 
+    @NotNull(message = "El artículo será oculto o no.")
+    private Boolean isHidden;
+
     @NotEmpty(message = "Debe seleccionar al menos una categoría")
     private List<Integer> categories;
 
     @NotNull(message = "El video es obligatorio")
     private MultipartFile video;
+
 }

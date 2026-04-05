@@ -73,7 +73,7 @@ public class ArticleService {
         article.setDescription(request.getDescription());
         article.setLocation(request.getLocation());
         article.setVideoUrl(videoUrl);
-        article.setIsHidden(false);
+        article.setIsHidden(request.getIsHidden());
         article.setCreatedAt(LocalDateTime.now());
         article.setAuthor(user);
 
