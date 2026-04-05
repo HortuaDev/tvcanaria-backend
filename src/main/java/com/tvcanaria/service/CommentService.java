@@ -232,9 +232,11 @@ public class CommentService {
 
         boolean isAdmin = user.getRole() == Role.ADMIN;
         boolean isAssignedModerator = isAssignedModerator(comment, user);
+        boolean isReporter = user.getRole() == Role.REPORTER
+                && comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
 
-        if (!isAdmin && !isAssignedModerator) {
-            throw new ForbiddenAccessException("No tienes permisos para moderar los comentarios de este artículo");
+        if (!isAdmin && !isAssignedModerator && !isReporter) {
+            throw new ForbiddenAccessException("No tienes permisos para moderar este comentario");
         }
 
         if (comment.getOffenseCount() < 5)
@@ -277,9 +279,11 @@ public class CommentService {
 
         boolean isAdmin = user.getRole() == Role.ADMIN;
         boolean isAssignedModerator = isAssignedModerator(comment, user);
+        boolean isReporter = user.getRole() == Role.REPORTER &&
+                comment.getArticle().getAuthor().getUserId().equals(user.getUserId());
 
-        if (!isAdmin && !isAssignedModerator) {
-            throw new ForbiddenAccessException("No tienes permisos para moderar los comentarios de este artículo");
+        if (!isAdmin && !isAssignedModerator && !isReporter) {
+            throw new ForbiddenAccessException("No tienes permisos para moderar este comentario");
         }
 
         List<CommentReport> reports = commentReportRepository.findByComment_CommentId(commentId);
