@@ -1,20 +1,360 @@
-INSERT INTO category(category_id, name) VALUES ('1','Política');
-INSERT INTO category(category_id, name) VALUES ('2','Sociedad');
-INSERT INTO category(category_id, name) VALUES ('3','Economía');
-INSERT INTO category(category_id, name) VALUES ('4','Deportes');
-INSERT INTO category(category_id, name) VALUES ('5','Cultura');
-INSERT INTO category(category_id, name) VALUES ('6','Tecnología');
-INSERT INTO category(category_id, name) VALUES ('7','Ciencia');
-INSERT INTO category(category_id, name) VALUES ('8','Salud');
-INSERT INTO category(category_id, name) VALUES ('9','Educación');
-INSERT INTO category(category_id, name) VALUES ('10','Medio ambiente');
-INSERT INTO category(category_id, name) VALUES ('11','Ocio');
-INSERT INTO category(category_id, name) VALUES ('12','Turismo');
-INSERT INTO category(category_id, name) VALUES ('13','Opinión');
-INSERT INTO category(category_id, name) VALUES ('14','Internacional');
-INSERT INTO category(category_id, name) VALUES ('15','Local');
-INSERT INTO category(category_id, name) VALUES ('16','Economía regional');
-INSERT INTO category(category_id, name) VALUES ('17','Empleo');
-INSERT INTO category(category_id, name) VALUES ('18','Innovación');
-INSERT INTO category(category_id, name) VALUES ('19','Medios de comunicación');
-INSERT INTO category(category_id, name) VALUES ('20','Gastronomía');
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`user_id`, `auth_provider`, `created_at`, `email`, `first_name`, `is_active`, `last_name`, `password_hash`, `provider_id`, `role`, `username`) VALUES
+(1, NULL, '2026-04-04 19:01:30.000000', 'lector1@test.com', 'Juan', b'1', 'Pérez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_juan'),
+(2, NULL, '2026-04-04 19:01:30.000000', 'lector2@test.com', 'Ana', b'1', 'Gómez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_ana'),
+(3, NULL, '2026-04-04 19:01:30.000000', 'lector3@test.com', 'Luis', b'1', 'Martínez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_luis'),
+(4, NULL, '2026-04-04 19:01:30.000000', 'lector4@test.com', 'Marta', b'1', 'López', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_marta'),
+(5, NULL, '2026-04-04 19:01:30.000000', 'lector5@test.com', 'Carlos', b'1', 'Sánchez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_carlos'),
+(6, NULL, '2026-04-04 19:01:30.000000', 'rep1@test.com', 'Elena', b'1', 'Díaz', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_elena'),
+(7, NULL, '2026-04-04 19:01:30.000000', 'rep2@test.com', 'David', b'1', 'Fernández', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_david'),
+(8, NULL, '2026-04-04 19:01:30.000000', 'rep3@test.com', 'Laura', b'1', 'García', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_laura'),
+(9, NULL, '2026-04-04 19:01:30.000000', 'rep4@test.com', 'Pablo', b'1', 'Romero', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_pablo'),
+(10, NULL, '2026-04-04 19:01:30.000000', 'rep5@test.com', 'Sara', b'1', 'Torres', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_sara'),
+(11, NULL, '2026-04-04 19:01:30.000000', 'mod1@test.com', 'Marcos', b'1', 'Ruiz', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'MODERATOR', 'mod_marcos'),
+(12, NULL, '2026-04-04 19:01:30.000000', 'mod2@test.com', 'Lucía', b'1', 'Vázquez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'MODERATOR', 'mod_lucia'),
+(13, NULL, '2026-04-04 19:01:30.000000', 'mod3@test.com', 'Jorge', b'1', 'Castro', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'MODERATOR', 'mod_jorge'),
+(14, NULL, '2026-04-04 19:01:30.000000', 'admin1@test.com', 'Admin', b'1', 'Principal', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'ADMIN', 'admin_1'),
+(15, NULL, '2026-04-04 19:01:30.000000', 'admin2@test.com', 'Admin', b'1', 'Secundario', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'ADMIN', 'admin_2'),
+(16, 'GOOGLE', '2026-04-04 19:06:46.084813', 'maldonadogarciakiara@gmail.com', 'Kiara', b'1', 'Maldonado García', 'OAUTH2_USER', '111741179059747100691', 'ADMIN', 'maldonadogarciakiara'),
+(17, 'GOOGLE', '2026-04-05 10:56:45.310277', 'usr4066@salesianos-lacuesta.net', 'KIARA', b'1', 'MALDONADO GARCÍA', 'OAUTH2_USER', '101571126695152440879', 'READER', 'usr4066'),
+(18, 'LOCAL', '2026-04-05 11:19:45.718236', 'lector6@test.com', 'Estefanía', b'1', 'García', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_estefania');
+
+
+--
+-- Dumping data for table `category`
+--
+
+INSERT INTO `category` (`category_id`, `name`) VALUES
+(26, 'Arquitectura'),
+(39, 'Arte'),
+(7, 'Ciencia'),
+(23, 'Cine'),
+(5, 'Cultura'),
+(37, 'Deporte regional'),
+(4, 'Deportes'),
+(3, 'Economía'),
+(16, 'Economía regional'),
+(9, 'Educación'),
+(36, 'Educación superior'),
+(17, 'Empleo'),
+(21, 'Eventos'),
+(20, 'Gastronomía'),
+(27, 'Historia'),
+(18, 'Innovación'),
+(14, 'Internacional'),
+(40, 'Investigación científica'),
+(25, 'Literatura'),
+(15, 'Local'),
+(10, 'Medio ambiente'),
+(34, 'Medio ambiente local'),
+(19, 'Medios de comunicación'),
+(22, 'Moda'),
+(24, 'Música'),
+(11, 'Ocio'),
+(13, 'Opinión'),
+(33, 'Opinión política'),
+(41, 'Otros'),
+(1, 'Política'),
+(28, 'Religión'),
+(8, 'Salud'),
+(35, 'Salud pública'),
+(2, 'Sociedad'),
+(32, 'Startups'),
+(6, 'Tecnología'),
+(30, 'Tecnología móvil'),
+(29, 'Transporte'),
+(12, 'Turismo'),
+(38, 'Turismo cultural'),
+(31, 'Videojuegos');
+
+--
+-- Dumping data for table `article`
+--
+
+INSERT INTO `article` (`article_id`, `created_at`, `description`, `is_hidden`, `location`, `rating`, `title`, `video_url`, `author_id`) VALUES
+(1, '2026-04-04 19:03:10.000000', 'Los presuntos responsables rompieron una de las ventanas y arrojaron al interior una botella con líquido inflamable', b'0', 'Playa de Las Américas, Tenerife', 4.3, 'Incendio provocado en un supermercado en Playa de Las Américas ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383358/youtube_uploads/v0rrdphphzilqkuw29j8.mp4', 6),
+(2, '2026-03-23 19:03:10.000000', 'La Guardia Civil continúa investigando en la operación \"ORETEL\" a un grupo criminal que ha sustraído objetos valorados en 3 millones de euros. Declaraciones de la portavoz de la Guardia Civil, Inmaculada González', b'0', 'Aeropuerto del Sur de Tenerife', 4.0, 'Detienen a 95 personas por robos en equipajes en el Aeropuerto de Tenerife Sur', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382619/youtube_uploads/bw0t0mm0cmki10aibrpj.mp4', 6),
+(3, '2026-03-30 19:03:10.000000', 'Son las nuevas medidas que ha puesto en marcha el cabildo y el ayuntamiento para evitar coches mal aparcados y daños en ese entorno protegido', b'0', 'El Teide, Tenerife', 3.4, 'Policías locales de La Orotava se encargarán de controlar a los visitantes que acuden al Teide', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382696/youtube_uploads/baklnb4vgq2zvp22ywdg.mp4', 6),
+(4, '2026-03-05 19:03:10.000000', 'La misión Artemis II llevará esta semana a los astronautas de la NASA Reid Wiseman, Victor Glover y Christina Koch, junto con el astronauta de la CSA (Agencia Espacial Canadiense) Jeremy Hansen, en una misión de aproximadamente diez días alrededor de la Luna y de regreso tras más de 50 años. ', b'0', 'Estados Unidos', 4.2, 'Cuenta atrás para la misión Artemis II: nos acercamos a la Luna tras más de 50 años', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382732/youtube_uploads/qoctljkhydx9odorvshn.mp4', 6),
+(5, '2026-03-15 19:03:10.000000', 'La defensa de Maduro alegó que no puede costear el proceso por las sanciones, mientras el tribunal de EE.UU. mantiene el caso por narcotráfico.', b'0', 'Estados Unidos', 3.5, 'Un juez de EE.UU. rechaza retirar los cargos contra Maduro ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382852/youtube_uploads/sfygdhcjpyd7m5y4njpq.mp4', 6),
+(6, '2026-04-04 19:03:10.000000', 'Expertos analizan el impacto de los temporales extremos y riesgos en las costas en infraestructuras y territorios costeros.', b'0', 'Lanzarote', 4.3, 'El cambio climático y los riesgos en las costas centran la III Jornada Técnica Medioambiental', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382925/youtube_uploads/yxc97gegrusao4tf8pvg.mp4', 6),
+(7, '2026-03-01 19:03:10.000000', 'Afecta positivamente a la pesca del atún. Así lo asegura un estudio del Consejo Superior de Investigaciones Científicas (CSIC). Los pescadores canarios advierten de que la pesca de esa especie va a menos, y eso ha coincidido con una etapa con menos polvo. La clave es el papel fertilizante de esa arena que viene de África.', b'0', 'Lanzarote', 3.4, 'La calima, positiva para la pesca del atún ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383040/youtube_uploads/sjhxh12b9qxmnr50nuv6.mp4', 6),
+(8, '2026-04-04 19:03:10.000000', 'En el Concurso de Cruces han participado 9 centros escolares de Preescolar e Infantil en la modalidad de Primaria y Educación Especial', b'0', 'Santa Cruz de Tenerife, Tenerife', 4.0, 'Fiesta de la Cruz en la capital tinerfeña ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383081/youtube_uploads/bsjqvscqjini18mglbfc.mp4', 6),
+(9, '2026-04-04 19:03:10.000000', 'Crece el debate sobre las pensiones Los socorristas denuncian que no puede garantizar la seguridad en las playas de La Oliva y reclama un nuevo pliego que mejore condiciones. a la jubilación masiva de la generación del baby boom.', b'0', 'La Oliva, Fuerteventura', 4.0, 'Socorristas de La Oliva convocan huelga este sábado ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383249/youtube_uploads/hovqubiehyqtv8hfcdab.mp4', 6),
+(10, '2026-04-04 19:03:10.000000', 'El DNI en soporte digital, que no sustituye al físico y ya se puede llevar en el móvil, será válido a partir del día 2, Jueves Santo, para identificarse ante cualquier entidad, desde un museo hasta la firma ante notario de cualquier documento.', b'0', 'Santa Cruz de Tenerife, Tenerife', 3.9, 'El DNI digital será válido a partir del jueves para identificarse ante cualquier entidad ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383164/youtube_uploads/ivhsruuxqhqmn5ianail.mp4', 6),
+(11, '2026-04-04 19:47:13.000000', 'Las protestas contra la masificación turística se extienden a las islas y el levante peninsular.', b'0', 'Canarias', 3.7, 'Vecinos contra la masificación turística: el límite del modelo español', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775331912/youtube_uploads/m4un9ccm3o5jdubh7nqg.mp4', 7),
+(12, '2026-04-04 19:47:13.000000', 'La jueza había archivado la causa penal por Cuna del Alma porque existía precisamente una resolución favorable del Gobierno autonómico para su ocupación de la costa', b'0', 'El Puertito, Adeje', 4.1, 'La Fiscalía pide paralizar parte de las obras del complejo turístico Cuna del Alma', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332157/youtube_uploads/l53pd6jfjnos0vkishg6.mp4', 7),
+(13, '2026-04-04 19:47:13.000000', 'La Consejería de Obras Públicas del Cabildo de Gran Canaria ha iniciado ya varias de las 12 obras de emergencia destinadas a recuperar las vías más castigadas por el reciente temporal. El vicepresidente insular, Augusto Hidalgo, coordina un plan de choque que contempla un total de 26 actuaciones de reparación en 21 carreteras afectadas por derrumbes, descalces y hundimientos. Para restaurar la conectividad con plenas garantías de seguridad, la institución prevé una inversión no inferior a los 13.120.000 euros.', b'0', 'Gran Canaria', 4.1, 'Gran Canaria invertirá más de 13 millones para reparar los daños de Therese', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332276/youtube_uploads/u9o3kxfb66yrufpetank.mp4', 7),
+(14, '2026-04-04 19:47:13.000000', 'La Pasión de Cristo representada en Adeje es una de las representaciones más singulares de la Semana Santa de las islas', b'0', 'Adeje', 4.1, 'Adeje se rinde a la Pasión de Cristo', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332381/youtube_uploads/p8kpoxkoxe66buvqf4ld.mp4', 7),
+(15, '2026-04-04 19:47:13.000000', 'La Guardia Civil ha detenido a 30 personas e investigado a otras 21 por robos con fuerza en maletas de pasajeros del aeropuerto Tenerife Sur-Reina Sofía. Los arrestados afrontan acusaciones de pertenencia a grupo criminal, robo con fuerza, daños, receptación y blanqueo de capitales.', b'0', 'Aeropuerto de Tenerife Sur ', 4.1, 'La Guardia Civil destapa una red de robos en el aeropuerto de Tenerife Sur ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383462/youtube_uploads/dplctlaltqrc5zsdinpr.mp4', 7),
+(16, '2026-04-04 19:47:13.000000', 'En el sur de Tenerife, en Granadilla de Abona, una comunidad de vecinos denuncia que los problemas de saneamiento de la zona hacen que la vía pública se llene de aguas fecales.', b'0', 'Granadilla de Abona', 4.1, 'Vecinos de Granadilla denuncian que conviven con aguas fecales ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332550/youtube_uploads/pammrbjvdw1x60huau5e.mp4', 7),
+(17, '2026-04-04 19:47:13.000000', 'A primera hora de esta mañana de viernes se ha producido un desprendimiento en la carretera que une Garachico, en Tenerife, con Los Silos y Buenavista, la TF-42. Se trata de un muro de contención de una finca privada en la que ya se trabaja para retirar las piedras caídas.', b'0', 'Garachico', 4.1, 'Operarios trabajan en la zona del derrumbe en Garachico para estudiar la situación del muro ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332614/youtube_uploads/lgwzozxukz0eeacpd8he.mp4', 7),
+(18, '2026-04-04 19:47:13.000000', 'Procesión de Madrugada en La Laguna', b'0', 'La Laguna, Tenerife', 4.1, 'Madrugada de actos en La Laguna', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332703/youtube_uploads/mc3yb0qeaa6nrr2yrzbb.mp4', 7),
+(19, '2026-04-04 19:47:13.000000', 'A través del proyecto Impulsa Maspalomas, \"se están instalando sistemas de sensorización y cámaras en la zona\"', b'0', 'Dunas, Maspalomas', 4.1, 'El Cabildo refuerza la vigilancia de las Dunas de Maspalomas en Semana Santa', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332872/youtube_uploads/hgdwlh8jtzcsgneyqdhq.mp4', 7),
+(20, '2026-04-04 19:47:13.000000', 'Bajo el lema \"Autismo y humanidad: toda vida tiene valor\", la celebración de 2026  destaca y reivindica la dignidad ', b'0', 'Centro de Día APANATE', 4.1, 'La inclusión, el principal reto, en el Día Mundial de la Concienciación sobre el Autismo ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775334428/youtube_uploads/h2gix3faonevdg88be6q.mp4', 7),
+(21, '2026-04-04 19:47:13.000000', 'La Dirección General de Hemodonación y Hemoterapia del Servicio Canario de la Salud (SCS) ha activado este miércoles varias campañas con el objetivo de facilitar la donación de sangre al conjunto de la población canaria', b'0', 'Hospital de la Candelaria, Tenerife', 4.1, 'Llamamiento a la población canaria para donar sangre', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775380595/youtube_uploads/vqtgbli1i6wdeu9kl6oj.mp4', 7),
+(22, '2026-04-04 19:47:13.000000', 'La Guardia Civil, en el marco de la operación “LABEL”, ha intervenido 70.000 artículos falsificados valorados en casi 7 millones de euros. En la operación se investiga a 19 personas por delitos contra la propiedad industrial y se han inspeccionados un total de 20 comercios ubicados en Tenerife y La Palma.', b'0', 'Santa Cruz de Tenerife', 4.1, 'Desmantelado en Tenerife un taller clandestino con 70.000 falsificaciones de ropa ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775381257/youtube_uploads/cm6db0zn4rnes4flcroi.mp4', 7),
+(23, '2026-04-05 11:10:49.000000', 'El papa León XIV ha afirmado que espera encontrar \"mucho amor, hospitalidad y acogida\" en su próxima visita a España, un país donde asegura haber encontrado siempre un pueblo de \"muy buena voluntad\".', b'0', 'El Vaticano', 4.1, 'El papa espera \"mucho amor y hospitalidad\" en su visita a España en junio ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383988/youtube_uploads/cpbglko6kznmwlxvinai.mp4', 8),
+(24, '2026-04-05 11:10:49.000000', 'La Policía Local de Arrecife denunció la retirada irregular de multas que suman 575.000 euros, por lo que se está investigando a 7 trabajadores del ayuntamiento de la capital de Lanzarote.', b'0', 'Ayuntamiento de Arrecife', 4.1, 'Investigan a 7 trabajadores del Ayuntamiento de Arrecife por perdonar multas por 600.000 euros ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384106/youtube_uploads/honlinp4ga4nszo0j9gs.mp4', 8),
+(29, '2026-04-05 11:18:00.000000', 'Muchas de las oficinas de CaixaBank en las Islas han estado este viernes cerradas, más del 80 % según los sindicatos. Jornada de huelga de los trabajadores de CaixaBank para reclamar una negociación con la empresa que reduzca la presión comercial que reciben.', b'0', 'CaixaBank, Santa Cruz de Tenerife', NULL, 'Los trabajadores de CaixaBank denuncian la presión comercial que reciben ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384265/youtube_uploads/am3w43m8qlawsgvri4l1.mp4', 8),
+(30, '2026-04-05 11:18:00.000000', 'La consejera de Sanidad del Gobierno de Canarias, Esther Monzón, ha subrayado la importancia del diálogo en el contexto de la huelga de médicos. Según ha señalado, el Ejecutivo canario ha insistido ante el Ministerio en la necesidad de mantener una comunicación abierta, clara y constante con el comité de huelga.', b'0', 'Gobierno de Canarias', 0.5, 'Canarias hace un llamamiento a la interlocución directa y al consenso por la huelga de médicos ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384398/youtube_uploads/h3holwby7hlnbtshp22q.mp4', 8),
+(31, '2026-04-03 11:35:59.000000', 'El coste de la reparación del Auditorio de Tenerife será asumido en partes iguales por la empresa que ejecutó el proyecto y por el arquitecto Santiago Calatrava. Una reparación que podría superar los 24 millones de euros. ', b'0', 'Auditorio de Tenerife', NULL, 'La reparación del Auditorio de Tenerife se asumirá entre la empresa y el arquitecto ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775385351/youtube_uploads/zdkp49cys8sqyrn5xxyy.mp4', 8),
+(52, '2026-04-04 12:04:41.000000', 'Otro de los puntos en el norte de la isla de Tenerife afectado en la tarde-noche del martes fue Puerto de la Cruz. Las lluvias dejaron unos acumulados de más de 60 litros en solo una hora.', b'0', 'Puerto de la Cruz, Tenerife', NULL, 'Hasta 60 litros por metro cuadrado en solo una hora en Puerto de la Cruz ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387118/youtube_uploads/vicphuqbgcs5esz0yuis.mp4', 9),
+(53, '2026-04-05 12:04:41.000000', 'El aumento de precios en alimentación y transporte obliga a los canarios a buscar alternativas turísticas más económicas para las vacaciones.', b'0', 'Lanzarote', NULL, 'La inflación dispara los costes del ocio en Semana Santa ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387230/youtube_uploads/vkaormiqghhnmytdcrcv.mp4', 9),
+(54, '2026-04-05 12:08:01.000000', 'Crece la preocupación entre los venezolanos en España por nuevas medidas de regularización ', b'0', 'Canarias', NULL, 'Crece la preocupación entre los venezolanos en España', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387321/youtube_uploads/ytqgvddog7r9dmqfg3aa.mp4', 9),
+(55, '2026-04-05 12:12:24.000000', 'La gran protagonista en el norte de Tenerife fue la lluvia, en concreto en Tacoronte. La lluvia dejó inundados garajes y bajos de viviendas en el barrio de El Pris, en la costa del municipio', b'0', 'El Pris, Tacoronte ', NULL, 'Noche complicada en el barrio de El Pris, Tacoronte ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387467/youtube_uploads/ftmzua2k6tnze3lahtqz.mp4', 9);
+
+--
+-- Dumping data for table `article_category`
+--
+
+INSERT INTO `article_category` (`article_id`, `category_id`) VALUES
+(5, 1),
+(1, 2),
+(2, 2),
+(3, 2),
+(10, 2),
+(12, 2),
+(20, 2),
+(24, 2),
+(54, 2),
+(8, 5),
+(14, 5),
+(18, 5),
+(23, 5),
+(4, 6),
+(10, 6),
+(6, 8),
+(15, 11),
+(9, 12),
+(11, 12),
+(12, 12),
+(15, 12),
+(53, 12),
+(4, 14),
+(5, 14),
+(1, 15),
+(11, 15),
+(12, 15),
+(14, 15),
+(16, 15),
+(19, 15),
+(22, 15),
+(7, 16),
+(29, 16),
+(53, 16),
+(9, 17),
+(29, 17),
+(30, 17),
+(4, 18),
+(13, 26),
+(31, 26),
+(8, 28),
+(14, 28),
+(18, 28),
+(23, 28),
+(3, 34),
+(6, 34),
+(7, 34),
+(12, 34),
+(13, 34),
+(17, 34),
+(52, 34),
+(55, 34),
+(16, 35),
+(20, 35),
+(21, 35),
+(30, 35),
+(2, 41),
+(19, 41);
+
+--
+-- Dumping data for table `comment`
+--
+
+INSERT INTO `comment` (`comment_id`, `comment`, `created_at`, `offense_count`, `rating`, `article_id`, `user_id`) VALUES
+(1, 'Excelente artículo.', '2026-04-05 10:49:50.000000', 0, 5.0, 1, 1),
+(2, 'Muy de acuerdo.', '2026-04-05 10:49:50.000000', 0, 4.5, 1, 2),
+(3, 'Interesante punto de vista.', '2026-04-05 10:49:50.000000', 0, 4.0, 1, 3),
+(4, 'Faltan datos.', '2026-04-05 10:49:50.000000', 0, 3.0, 1, 4),
+(5, 'Me ha gustado.', '2026-04-05 10:49:50.000000', 0, 5.0, 1, 5),
+(6, 'Gran trabajo.', '2026-04-05 10:49:50.000000', 0, 5.0, 2, 1),
+(7, 'Podría mejorar.', '2026-04-05 10:49:50.000000', 0, 3.5, 2, 2),
+(8, 'Buena redacción.', '2026-04-05 10:49:50.000000', 0, 4.0, 2, 3),
+(9, 'No estoy seguro de esto.', '2026-04-05 10:49:50.000000', 0, 2.5, 2, 4),
+(10, 'Gracias por la info.', '2026-04-05 10:49:50.000000', 0, 5.0, 2, 5),
+(11, 'Bastante bien.', '2026-04-05 10:49:50.000000', 0, 4.0, 3, 1),
+(12, 'Correcto.', '2026-04-05 10:49:50.000000', 0, 3.5, 3, 2),
+(13, 'Menuda estupidez de artículo, el autor es un completo inútil.', '2026-04-05 10:49:50.000000', 6, 1.0, 3, 3),
+(14, 'Debate complejo.', '2026-04-05 10:49:50.000000', 0, 4.5, 3, 4),
+(15, 'Bien argumentado.', '2026-04-05 10:49:50.000000', 0, 4.0, 3, 5),
+(16, 'Buen resumen.', '2026-04-05 10:49:50.000000', 0, 5.0, 4, 1),
+(17, 'Interesante.', '2026-04-05 10:49:50.000000', 0, 4.0, 4, 2),
+(18, 'Un poco aburrido.', '2026-04-05 10:49:50.000000', 0, 2.0, 4, 3),
+(19, 'Recomendado.', '2026-04-05 10:49:50.000000', 0, 5.0, 4, 4),
+(20, 'Perfecto.', '2026-04-05 10:49:50.000000', 0, 5.0, 4, 5),
+(21, 'Me sirve la información.', '2026-04-05 10:49:50.000000', 0, 4.0, 5, 1),
+(22, 'Genial.', '2026-04-05 10:49:50.000000', 0, 5.0, 5, 2),
+(23, 'Esto es basura sensacionalista y una pérdida de tiempo.', '2026-04-05 10:49:50.000000', 6, 1.0, 5, 3),
+(24, 'Regular.', '2026-04-05 10:49:50.000000', 0, 3.0, 5, 4),
+(25, 'Muy profundo.', '2026-04-05 10:49:50.000000', 0, 4.5, 5, 5),
+(26, 'Excelente artículo.', '2026-04-05 10:49:50.000000', 0, 5.0, 6, 1),
+(27, 'Muy de acuerdo.', '2026-04-05 10:49:50.000000', 0, 4.5, 6, 2),
+(28, 'Interesante.', '2026-04-05 10:49:50.000000', 0, 4.0, 6, 3),
+(29, 'Faltan datos.', '2026-04-05 10:49:50.000000', 0, 3.0, 6, 4),
+(30, 'Me gusta.', '2026-04-05 10:49:50.000000', 0, 5.0, 6, 5),
+(31, 'Gran trabajo.', '2026-04-05 10:49:50.000000', 0, 5.0, 7, 1),
+(32, 'Podría mejorar.', '2026-04-05 10:49:50.000000', 0, 3.5, 7, 2),
+(33, 'Pésimo periodismo, das vergüenza ajena.', '2026-04-05 10:49:50.000000', 3, 1.0, 7, 3),
+(34, 'No estoy seguro.', '2026-04-05 10:49:50.000000', 0, 2.5, 7, 4),
+(35, 'Gracias.', '2026-04-05 10:49:50.000000', 0, 5.0, 7, 5),
+(36, 'Bastante bien.', '2026-04-05 10:49:50.000000', 0, 4.0, 8, 1),
+(37, 'Correcto.', '2026-04-05 10:49:50.000000', 0, 3.5, 8, 2),
+(38, 'Informativo.', '2026-04-05 10:49:50.000000', 0, 4.5, 8, 3),
+(39, 'Bueno.', '2026-04-05 10:49:50.000000', 0, 4.0, 8, 4),
+(40, 'Bien escrito.', '2026-04-05 10:49:50.000000', 0, 4.0, 8, 5),
+(41, 'Buen resumen.', '2026-04-05 10:49:50.000000', 0, 5.0, 9, 1),
+(42, 'Interesante.', '2026-04-05 10:49:50.000000', 0, 4.0, 9, 2),
+(43, 'Qué asco de texto, no vuelvas a escribir en tu vida.', '2026-04-05 10:49:50.000000', 2, 1.0, 9, 3),
+(44, 'Recomendado.', '2026-04-05 10:49:50.000000', 0, 5.0, 9, 4),
+(45, 'Perfecto.', '2026-04-05 10:49:50.000000', 0, 5.0, 9, 5),
+(46, 'Me sirve.', '2026-04-05 10:49:50.000000', 0, 4.0, 10, 1),
+(47, 'Genial.', '2026-04-05 10:49:50.000000', 0, 5.0, 10, 2),
+(48, 'Pasable.', '2026-04-05 10:49:50.000000', 0, 3.0, 10, 3),
+(49, 'Regular.', '2026-04-05 10:49:50.000000', 0, 3.0, 10, 4),
+(50, 'Muy profundo.', '2026-04-05 10:49:50.000000', 0, 4.5, 10, 5),
+(51, 'Excelente.', '2026-04-05 10:49:50.000000', 0, 5.0, 11, 1),
+(52, 'Muy de acuerdo.', '2026-04-05 10:49:50.000000', 0, 4.5, 11, 2),
+(53, 'Totalmente vendido, esto es propaganda barata.', '2026-04-05 10:49:50.000000', 1, 1.0, 11, 3),
+(54, 'Faltan fuentes.', '2026-04-05 10:49:50.000000', 0, 3.0, 11, 4),
+(55, 'Me ha gustado.', '2026-04-05 10:49:50.000000', 0, 5.0, 11, 5),
+(56, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 12, 1),
+(57, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 12, 2),
+(58, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 12, 3),
+(59, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 12, 4),
+(60, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 12, 5),
+(61, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 13, 1),
+(62, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 13, 2),
+(63, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 13, 3),
+(64, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 13, 4),
+(65, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 13, 5),
+(66, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 14, 1),
+(67, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 14, 2),
+(68, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 14, 3),
+(69, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 14, 4),
+(70, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 14, 5),
+(71, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 15, 1),
+(72, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 15, 2),
+(73, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 15, 3),
+(74, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 15, 4),
+(75, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 15, 5),
+(76, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 16, 1),
+(77, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 16, 2),
+(78, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 16, 3),
+(79, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 16, 4),
+(80, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 16, 5),
+(81, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 17, 1),
+(82, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 17, 2),
+(83, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 17, 3),
+(84, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 17, 4),
+(85, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 17, 5),
+(86, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 18, 1),
+(87, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 18, 2),
+(88, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 18, 3),
+(89, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 18, 4),
+(90, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 18, 5),
+(91, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 19, 1),
+(92, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 19, 2),
+(93, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 19, 3),
+(94, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 19, 4),
+(95, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 19, 5),
+(96, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 20, 1),
+(97, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 20, 2),
+(98, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 20, 3),
+(99, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 20, 4),
+(100, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 20, 5),
+(101, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 21, 1),
+(102, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 21, 2),
+(103, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 21, 3),
+(104, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 21, 4),
+(105, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 21, 5),
+(106, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 22, 1),
+(107, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 22, 2),
+(108, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 22, 3),
+(109, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 22, 4),
+(110, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 22, 5),
+(111, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 23, 1),
+(112, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 23, 2),
+(113, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 23, 3),
+(114, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 23, 4),
+(115, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 23, 5),
+(116, 'Muy informativo.', '2026-04-05 10:55:28.000000', 0, 4.0, 24, 1),
+(117, 'Buen estilo.', '2026-04-05 10:55:28.000000', 0, 4.5, 24, 2),
+(118, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 24, 3),
+(119, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 24, 4),
+(120, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 24, 5),
+(122, 'Qué mala calidad el vídeo este.', '2026-04-05 11:00:32.032923', 0, 0.5, 30, 17);
+
+--
+-- Dumping data for table `comment_report`
+--
+
+INSERT INTO `comment_report` (`report_id`, `created_at`, `reviewed`, `valid_report`, `comment_id`, `user_id`) VALUES
+(7, '2026-04-05 10:55:47.000000', b'0', NULL, 13, 1),
+(8, '2026-04-05 10:55:47.000000', b'0', NULL, 13, 2),
+(9, '2026-04-05 10:55:47.000000', b'0', NULL, 13, 4),
+(10, '2026-04-05 10:55:47.000000', b'0', NULL, 13, 5),
+(11, '2026-04-05 10:55:47.000000', b'0', NULL, 13, 11),
+(12, '2026-04-05 10:55:47.000000', b'0', NULL, 13, 12),
+(13, '2026-04-05 10:55:47.000000', b'0', NULL, 23, 1),
+(14, '2026-04-05 10:55:47.000000', b'0', NULL, 23, 2),
+(15, '2026-04-05 10:55:47.000000', b'0', NULL, 23, 4),
+(16, '2026-04-05 10:55:47.000000', b'0', NULL, 23, 5),
+(17, '2026-04-05 10:55:47.000000', b'0', NULL, 23, 11),
+(18, '2026-04-05 10:55:47.000000', b'0', NULL, 23, 12),
+(19, '2026-04-05 10:55:47.000000', b'0', NULL, 33, 1),
+(20, '2026-04-05 10:55:47.000000', b'0', NULL, 33, 2),
+(21, '2026-04-05 10:55:47.000000', b'0', NULL, 33, 4),
+(22, '2026-04-05 10:55:47.000000', b'0', NULL, 43, 4),
+(23, '2026-04-05 10:55:47.000000', b'0', NULL, 43, 5),
+(24, '2026-04-05 10:55:47.000000', b'0', NULL, 53, 1);
+
+--
+-- Dumping data for table `moderator_reporter`
+--
+
+INSERT INTO `moderator_reporter` (`id`, `created_at`, `status`, `moderator_id`, `reporter_id`) VALUES
+(4, '2026-04-04 19:01:54.000000', 'ACCEPTED', 11, 6),
+(5, '2026-04-04 19:01:54.000000', 'ACCEPTED', 11, 7),
+(6, '2026-04-04 19:01:54.000000', 'ACCEPTED', 12, 8),
+(7, '2026-04-04 19:01:54.000000', 'ACCEPTED', 13, 9),
+(8, '2026-04-04 19:01:54.000000', 'ACCEPTED', 13, 10);
+
+
+--
+-- Dumping data for table `user_category`
+--
+
+INSERT INTO `user_category` (`user_id`, `category_id`) VALUES
+(1, 1),
+(4, 1),
+(2, 2),
+(4, 3),
+(3, 4),
+(2, 5),
+(1, 6),
+(5, 6),
+(3, 7),
+(4, 8),
+(4, 10),
+(2, 12),
+(16, 15),
+(16, 17),
+(2, 20),
+(5, 30),
+(1, 31),
+(5, 32);
+COMMIT;
