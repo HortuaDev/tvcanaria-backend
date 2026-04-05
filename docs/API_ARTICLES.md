@@ -8,28 +8,6 @@ Este módulo gestiona la publicación, consulta, edición y eliminación de art�
 
 ## DTOs principales
 
-### `ArticleRequest` — Crear artículo (JSON)
-
-```json
-{
-  "title": "Incendio en Las Palmas",
-  "description": "Descripción detallada del suceso...",
-  "videoUrl": "https://res.cloudinary.com/.../video.mp4",
-  "location": "Las Palmas de Gran Canaria",
-  "categories": [1, 3]
-}
-```
-
-| Campo         | Reglas                                    |
-| ------------- | ----------------------------------------- |
-| `title`       | Obligatorio · máx. 150 caracteres         |
-| `description` | Opcional                                  |
-| `videoUrl`    | Opcional · máx. 255 caracteres            |
-| `location`    | Opcional · máx. 100 caracteres            |
-| `categories`  | Obligatorio · al menos un ID de categoría |
-
----
-
 ### `ArticleUploadRequest` — Crear artículo con fichero de vídeo (multipart/form-data)
 
 | Campo         | Reglas                                           |
@@ -102,18 +80,19 @@ Esta lógica está implementada como consulta nativa en `ArticleRepository.calcu
 
 ## Consultas disponibles en el repositorio
 
-| Método                                                 | Descripción                                            |
-| ------------------------------------------------------ | ------------------------------------------------------ |
-| `findAll(pageable)`                                    | Todos los artículos paginados (con autor y categorías) |
-| `findByIsHiddenFalse(pageable)`                        | Solo artículos visibles, paginados                     |
-| `findByCategoriesCategoryId(id, pageable)`             | Artículos de una categoría concreta                    |
-| `findTop20ByIsHiddenFalseOrderByCreatedAtDesc()`       | Últimos 20 artículos visibles                          |
-| `findTop20DistinctByCategoriesIn...`                   | Últimos 20 de un conjunto de categorías                |
-| `findRelatedArticles(categories, articleId, pageable)` | Artículos relacionados por categoría                   |
-| `findFallbackRelatedArticles(articleId, pageable)`     | Fallback si no hay relacionados                        |
-| `searchVisibleArticlesByTitle(keyword)`                | Búsqueda por título (case-insensitive)                 |
-| `findByAuthorUserId(userId)`                           | Artículos de un autor concreto                         |
-| `findMyArticlesWithFilters(...)`                       | Búsqueda con filtros de fecha, categoría y rol         |
+| Método                                                 | Descripción                                                                                   |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `findAll(pageable)`                                    | Todos los artículos paginados (con autor y categorías)                                        |
+| `findByIsHiddenFalse(pageable)`                        | Solo artículos visibles, paginados                                                            |
+| `findByCategoriesCategoryId(id, pageable)`             | Artículos de una categoría concreta                                                           |
+| `findTop20ByIsHiddenFalseOrderByCreatedAtDesc()`       | Últimos 20 artículos visibles                                                                 |
+| `findTop20DistinctByCategoriesIn...`                   | Últimos 20 de un conjunto de categorías                                                       |
+| `findRelatedArticles(categories, articleId, pageable)` | Artículos relacionados por categoría                                                          |
+| `findFallbackRelatedArticles(articleId, pageable)`     | Fallback si no hay relacionados                                                               |
+| `searchVisibleArticlesByTitle(keyword)`                | Búsqueda por título (case-insensitive)                                                        |
+| `findByAuthorUserId(userId)`                           | Artículos de un autor concreto                                                                |
+| `findMyArticlesWithFilters(...)`                       | Búsqueda con filtros de fecha, categoría y rol                                                |
+| `findFeedArticlesWithFilters(...)`                     | Artículos del feed público (visibles) filtrados opcionalmente por categoría y rango de fechas |
 
 ---
 
