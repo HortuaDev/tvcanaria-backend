@@ -53,9 +53,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
 
                         // 3. COMMENTS: Moderación y Participación
-                        .requestMatchers(HttpMethod.GET, "/api/comments/reported").hasAnyAuthority("ADMIN", "MODERATOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/comments/**").hasAnyAuthority("ADMIN", "MODERATOR")
-                        .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated() // Crear y reportar
+                        .requestMatchers(HttpMethod.GET, "/api/comments/reported")
+                        .hasAnyAuthority("ADMIN", "MODERATOR", "REPORTER")
+                        .requestMatchers(HttpMethod.PUT, "/api/comments/**")
+                        .hasAnyAuthority("ADMIN", "MODERATOR", "REPORTER")
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
 
