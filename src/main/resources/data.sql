@@ -8,7 +8,7 @@ INSERT INTO `user` (`user_id`, `auth_provider`, `created_at`, `email`, `first_na
 (3, NULL, '2026-04-04 19:01:30.000000', 'lector3@test.com', 'Luis', b'1', 'Martínez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_luis'),
 (4, NULL, '2026-04-04 19:01:30.000000', 'lector4@test.com', 'Marta', b'1', 'López', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_marta'),
 (5, NULL, '2026-04-04 19:01:30.000000', 'lector5@test.com', 'Carlos', b'1', 'Sánchez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_carlos'),
-(6, NULL, '2026-04-04 19:01:30.000000', 'rep1@test.com', 'Elena', b'1', 'Díaz', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_elena'),
+(6, NULL, '2026-04-04 19:01:30.000000', 'rep1@test.com', 'Elena', b'1', 'Gómez', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_elena'),
 (7, NULL, '2026-04-04 19:01:30.000000', 'rep2@test.com', 'David', b'1', 'Fernández', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_david'),
 (8, NULL, '2026-04-04 19:01:30.000000', 'rep3@test.com', 'Laura', b'1', 'García', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_laura'),
 (9, NULL, '2026-04-04 19:01:30.000000', 'rep4@test.com', 'Pablo', b'1', 'Romero', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'REPORTER', 'reporter_pablo'),
@@ -21,8 +21,6 @@ INSERT INTO `user` (`user_id`, `auth_provider`, `created_at`, `email`, `first_na
 (16, 'GOOGLE', '2026-04-04 19:06:46.084813', 'maldonadogarciakiara@gmail.com', 'Kiara', b'1', 'Maldonado García', 'OAUTH2_USER', '111741179059747100691', 'ADMIN', 'maldonadogarciakiara'),
 (17, 'GOOGLE', '2026-04-05 10:56:45.310277', 'usr4066@salesianos-lacuesta.net', 'KIARA', b'1', 'MALDONADO GARCÍA', 'OAUTH2_USER', '101571126695152440879', 'READER', 'usr4066'),
 (18, 'LOCAL', '2026-04-05 11:19:45.718236', 'lector6@test.com', 'Estefanía', b'1', 'García', '$2a$10$hLCAvAAXQZCV9dIzL5NZ6uk1BXRzbCOLpVnNQ/UGwSNHDNZIzvo9O', NULL, 'READER', 'lector_estefania');
-
-
 --
 -- Dumping data for table `category`
 --
@@ -76,7 +74,7 @@ INSERT INTO `category` (`category_id`, `name`) VALUES
 
 INSERT INTO `article` (`article_id`, `created_at`, `description`, `is_hidden`, `location`, `rating`, `title`, `video_url`, `author_id`) VALUES
 (1, '2026-04-04 19:03:10.000000', 'Los presuntos responsables rompieron una de las ventanas y arrojaron al interior una botella con líquido inflamable', b'0', 'Playa de Las Américas, Tenerife', 4.3, 'Incendio provocado en un supermercado en Playa de Las Américas ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383358/youtube_uploads/v0rrdphphzilqkuw29j8.mp4', 6),
-(2, '2026-03-23 19:03:10.000000', 'La Guardia Civil continúa investigando en la operación \"ORETEL\" a un grupo criminal que ha sustraído objetos valorados en 3 millones de euros. Declaraciones de la portavoz de la Guardia Civil, Inmaculada González', b'0', 'Aeropuerto del Sur de Tenerife', 4.0, 'Detienen a 95 personas por robos en equipajes en el Aeropuerto de Tenerife Sur', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382619/youtube_uploads/bw0t0mm0cmki10aibrpj.mp4', 6),
+(2, '2026-03-23 19:03:10.000000', 'La Guardia Civil continúa investigando en la operación "ORETEL" a un grupo criminal que ha sustraído objetos valorados en 3 millones de euros. Declaraciones de la portavoz de la Guardia Civil, Inmaculada González', b'0', 'Aeropuerto del Sur de Tenerife', 4.0, 'Detienen a 95 personas por robos en equipajes en el Aeropuerto de Tenerife Sur', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382619/youtube_uploads/bw0t0mm0cmki10aibrpj.mp4', 6),
 (3, '2026-03-30 19:03:10.000000', 'Son las nuevas medidas que ha puesto en marcha el cabildo y el ayuntamiento para evitar coches mal aparcados y daños en ese entorno protegido', b'0', 'El Teide, Tenerife', 3.4, 'Policías locales de La Orotava se encargarán de controlar a los visitantes que acuden al Teide', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382696/youtube_uploads/baklnb4vgq2zvp22ywdg.mp4', 6),
 (4, '2026-03-05 19:03:10.000000', 'La misión Artemis II llevará esta semana a los astronautas de la NASA Reid Wiseman, Victor Glover y Christina Koch, junto con el astronauta de la CSA (Agencia Espacial Canadiense) Jeremy Hansen, en una misión de aproximadamente diez días alrededor de la Luna y de regreso tras más de 50 años. ', b'0', 'Estados Unidos', 4.2, 'Cuenta atrás para la misión Artemis II: nos acercamos a la Luna tras más de 50 años', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382732/youtube_uploads/qoctljkhydx9odorvshn.mp4', 6),
 (5, '2026-03-15 19:03:10.000000', 'La defensa de Maduro alegó que no puede costear el proceso por las sanciones, mientras el tribunal de EE.UU. mantiene el caso por narcotráfico.', b'0', 'Estados Unidos', 3.5, 'Un juez de EE.UU. rechaza retirar los cargos contra Maduro ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775382852/youtube_uploads/sfygdhcjpyd7m5y4njpq.mp4', 6),
@@ -87,25 +85,30 @@ INSERT INTO `article` (`article_id`, `created_at`, `description`, `is_hidden`, `
 (10, '2026-04-04 19:03:10.000000', 'El DNI en soporte digital, que no sustituye al físico y ya se puede llevar en el móvil, será válido a partir del día 2, Jueves Santo, para identificarse ante cualquier entidad, desde un museo hasta la firma ante notario de cualquier documento.', b'0', 'Santa Cruz de Tenerife, Tenerife', 3.9, 'El DNI digital será válido a partir del jueves para identificarse ante cualquier entidad ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383164/youtube_uploads/ivhsruuxqhqmn5ianail.mp4', 6),
 (11, '2026-04-04 19:47:13.000000', 'Las protestas contra la masificación turística se extienden a las islas y el levante peninsular.', b'0', 'Canarias', 3.7, 'Vecinos contra la masificación turística: el límite del modelo español', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775331912/youtube_uploads/m4un9ccm3o5jdubh7nqg.mp4', 7),
 (12, '2026-04-04 19:47:13.000000', 'La jueza había archivado la causa penal por Cuna del Alma porque existía precisamente una resolución favorable del Gobierno autonómico para su ocupación de la costa', b'0', 'El Puertito, Adeje', 4.1, 'La Fiscalía pide paralizar parte de las obras del complejo turístico Cuna del Alma', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332157/youtube_uploads/l53pd6jfjnos0vkishg6.mp4', 7),
-(13, '2026-04-04 19:47:13.000000', 'La Consejería de Obras Públicas del Cabildo de Gran Canaria ha iniciado ya varias de las 12 obras de emergencia destinadas a recuperar las vías más castigadas por el reciente temporal. El vicepresidente insular, Augusto Hidalgo, coordina un plan de choque que contempla un total de 26 actuaciones de reparación en 21 carreteras afectadas por derrumbes, descalces y hundimientos. Para restaurar la conectividad con plenas garantías de seguridad, la institución prevé una inversión no inferior a los 13.120.000 euros.', b'0', 'Gran Canaria', 4.1, 'Gran Canaria invertirá más de 13 millones para reparar los daños de Therese', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332276/youtube_uploads/u9o3kxfb66yrufpetank.mp4', 7),
+(13, '2026-03-30 19:47:13.000000', 'La Consejería de Obras Públicas del Cabildo de Gran Canaria ha iniciado ya varias de las 12 obras de emergencia destinadas a recuperar las vías más castigadas por el reciente temporal. El vicepresidente insular, Augusto Hidalgo, coordina un plan de choque que contempla un total de 26 actuaciones de reparación en 21 carreteras afectadas por derrumbes, descalces y hundimientos. Para restaurar la conectividad con plenas garantías de seguridad, la institución prevé una inversión no inferior a los 13.120.000 euros.', b'0', 'Gran Canaria', 4.1, 'Gran Canaria invertirá más de 13 millones para reparar los daños de Therese', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332276/youtube_uploads/u9o3kxfb66yrufpetank.mp4', 7),
 (14, '2026-04-04 19:47:13.000000', 'La Pasión de Cristo representada en Adeje es una de las representaciones más singulares de la Semana Santa de las islas', b'0', 'Adeje', 4.1, 'Adeje se rinde a la Pasión de Cristo', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332381/youtube_uploads/p8kpoxkoxe66buvqf4ld.mp4', 7),
 (15, '2026-04-04 19:47:13.000000', 'La Guardia Civil ha detenido a 30 personas e investigado a otras 21 por robos con fuerza en maletas de pasajeros del aeropuerto Tenerife Sur-Reina Sofía. Los arrestados afrontan acusaciones de pertenencia a grupo criminal, robo con fuerza, daños, receptación y blanqueo de capitales.', b'0', 'Aeropuerto de Tenerife Sur ', 4.1, 'La Guardia Civil destapa una red de robos en el aeropuerto de Tenerife Sur ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383462/youtube_uploads/dplctlaltqrc5zsdinpr.mp4', 7),
 (16, '2026-04-04 19:47:13.000000', 'En el sur de Tenerife, en Granadilla de Abona, una comunidad de vecinos denuncia que los problemas de saneamiento de la zona hacen que la vía pública se llene de aguas fecales.', b'0', 'Granadilla de Abona', 4.1, 'Vecinos de Granadilla denuncian que conviven con aguas fecales ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332550/youtube_uploads/pammrbjvdw1x60huau5e.mp4', 7),
 (17, '2026-04-04 19:47:13.000000', 'A primera hora de esta mañana de viernes se ha producido un desprendimiento en la carretera que une Garachico, en Tenerife, con Los Silos y Buenavista, la TF-42. Se trata de un muro de contención de una finca privada en la que ya se trabaja para retirar las piedras caídas.', b'0', 'Garachico', 4.1, 'Operarios trabajan en la zona del derrumbe en Garachico para estudiar la situación del muro ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332614/youtube_uploads/lgwzozxukz0eeacpd8he.mp4', 7),
 (18, '2026-04-04 19:47:13.000000', 'Procesión de Madrugada en La Laguna', b'0', 'La Laguna, Tenerife', 4.1, 'Madrugada de actos en La Laguna', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332703/youtube_uploads/mc3yb0qeaa6nrr2yrzbb.mp4', 7),
-(19, '2026-04-04 19:47:13.000000', 'A través del proyecto Impulsa Maspalomas, \"se están instalando sistemas de sensorización y cámaras en la zona\"', b'0', 'Dunas, Maspalomas', 4.1, 'El Cabildo refuerza la vigilancia de las Dunas de Maspalomas en Semana Santa', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332872/youtube_uploads/hgdwlh8jtzcsgneyqdhq.mp4', 7),
-(20, '2026-04-04 19:47:13.000000', 'Bajo el lema \"Autismo y humanidad: toda vida tiene valor\", la celebración de 2026  destaca y reivindica la dignidad ', b'0', 'Centro de Día APANATE', 4.1, 'La inclusión, el principal reto, en el Día Mundial de la Concienciación sobre el Autismo ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775334428/youtube_uploads/h2gix3faonevdg88be6q.mp4', 7),
-(21, '2026-04-04 19:47:13.000000', 'La Dirección General de Hemodonación y Hemoterapia del Servicio Canario de la Salud (SCS) ha activado este miércoles varias campañas con el objetivo de facilitar la donación de sangre al conjunto de la población canaria', b'0', 'Hospital de la Candelaria, Tenerife', 4.1, 'Llamamiento a la población canaria para donar sangre', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775380595/youtube_uploads/vqtgbli1i6wdeu9kl6oj.mp4', 7),
+(19, '2026-04-04 19:47:13.000000', 'A través del proyecto Impulsa Maspalomas, "se están instalando sistemas de sensorización y cámaras en la zona"', b'0', 'Dunas, Maspalomas', 4.1, 'El Cabildo refuerza la vigilancia de las Dunas de Maspalomas en Semana Santa', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775332872/youtube_uploads/hgdwlh8jtzcsgneyqdhq.mp4', 7),
+(20, '2026-04-04 19:47:13.000000', 'Bajo el lema "Autismo y humanidad: toda vida tiene valor", la celebración de 2026 destaca y reivindica la dignidad ', b'0', 'Centro de Día APANATE', 4.1, 'La inclusión, el principal reto, en el Día Mundial de la Concienciación sobre el Autismo ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775334428/youtube_uploads/h2gix3faonevdg88be6q.mp4', 7),
+(21, '2026-03-29 19:47:13.000000', 'La Dirección General de Hemodonación y Hemoterapia del Servicio Canario de la Salud (SCS) ha activado este miércoles varias campañas con el objetivo de facilitar la donación de sangre al conjunto de la población canaria', b'0', 'Hospital de la Candelaria, Tenerife', 4.1, 'Llamamiento a la población canaria para donar sangre', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775380595/youtube_uploads/vqtgbli1i6wdeu9kl6oj.mp4', 7),
 (22, '2026-04-04 19:47:13.000000', 'La Guardia Civil, en el marco de la operación “LABEL”, ha intervenido 70.000 artículos falsificados valorados en casi 7 millones de euros. En la operación se investiga a 19 personas por delitos contra la propiedad industrial y se han inspeccionados un total de 20 comercios ubicados en Tenerife y La Palma.', b'0', 'Santa Cruz de Tenerife', 4.1, 'Desmantelado en Tenerife un taller clandestino con 70.000 falsificaciones de ropa ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775381257/youtube_uploads/cm6db0zn4rnes4flcroi.mp4', 7),
-(23, '2026-04-05 11:10:49.000000', 'El papa León XIV ha afirmado que espera encontrar \"mucho amor, hospitalidad y acogida\" en su próxima visita a España, un país donde asegura haber encontrado siempre un pueblo de \"muy buena voluntad\".', b'0', 'El Vaticano', 4.1, 'El papa espera \"mucho amor y hospitalidad\" en su visita a España en junio ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383988/youtube_uploads/cpbglko6kznmwlxvinai.mp4', 8),
-(24, '2026-04-05 11:10:49.000000', 'La Policía Local de Arrecife denunció la retirada irregular de multas que suman 575.000 euros, por lo que se está investigando a 7 trabajadores del ayuntamiento de la capital de Lanzarote.', b'0', 'Ayuntamiento de Arrecife', 4.1, 'Investigan a 7 trabajadores del Ayuntamiento de Arrecife por perdonar multas por 600.000 euros ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384106/youtube_uploads/honlinp4ga4nszo0j9gs.mp4', 8),
-(29, '2026-04-05 11:18:00.000000', 'Muchas de las oficinas de CaixaBank en las Islas han estado este viernes cerradas, más del 80 % según los sindicatos. Jornada de huelga de los trabajadores de CaixaBank para reclamar una negociación con la empresa que reduzca la presión comercial que reciben.', b'0', 'CaixaBank, Santa Cruz de Tenerife', NULL, 'Los trabajadores de CaixaBank denuncian la presión comercial que reciben ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384265/youtube_uploads/am3w43m8qlawsgvri4l1.mp4', 8),
-(30, '2026-04-05 11:18:00.000000', 'La consejera de Sanidad del Gobierno de Canarias, Esther Monzón, ha subrayado la importancia del diálogo en el contexto de la huelga de médicos. Según ha señalado, el Ejecutivo canario ha insistido ante el Ministerio en la necesidad de mantener una comunicación abierta, clara y constante con el comité de huelga.', b'0', 'Gobierno de Canarias', 0.5, 'Canarias hace un llamamiento a la interlocución directa y al consenso por la huelga de médicos ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384398/youtube_uploads/h3holwby7hlnbtshp22q.mp4', 8),
-(31, '2026-04-03 11:35:59.000000', 'El coste de la reparación del Auditorio de Tenerife será asumido en partes iguales por la empresa que ejecutó el proyecto y por el arquitecto Santiago Calatrava. Una reparación que podría superar los 24 millones de euros. ', b'0', 'Auditorio de Tenerife', NULL, 'La reparación del Auditorio de Tenerife se asumirá entre la empresa y el arquitecto ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775385351/youtube_uploads/zdkp49cys8sqyrn5xxyy.mp4', 8),
-(52, '2026-04-04 12:04:41.000000', 'Otro de los puntos en el norte de la isla de Tenerife afectado en la tarde-noche del martes fue Puerto de la Cruz. Las lluvias dejaron unos acumulados de más de 60 litros en solo una hora.', b'0', 'Puerto de la Cruz, Tenerife', NULL, 'Hasta 60 litros por metro cuadrado en solo una hora en Puerto de la Cruz ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387118/youtube_uploads/vicphuqbgcs5esz0yuis.mp4', 9),
-(53, '2026-04-05 12:04:41.000000', 'El aumento de precios en alimentación y transporte obliga a los canarios a buscar alternativas turísticas más económicas para las vacaciones.', b'0', 'Lanzarote', NULL, 'La inflación dispara los costes del ocio en Semana Santa ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387230/youtube_uploads/vkaormiqghhnmytdcrcv.mp4', 9),
-(54, '2026-04-05 12:08:01.000000', 'Crece la preocupación entre los venezolanos en España por nuevas medidas de regularización ', b'0', 'Canarias', NULL, 'Crece la preocupación entre los venezolanos en España', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387321/youtube_uploads/ytqgvddog7r9dmqfg3aa.mp4', 9),
-(55, '2026-04-05 12:12:24.000000', 'La gran protagonista en el norte de Tenerife fue la lluvia, en concreto en Tacoronte. La lluvia dejó inundados garajes y bajos de viviendas en el barrio de El Pris, en la costa del municipio', b'0', 'El Pris, Tacoronte ', NULL, 'Noche complicada en el barrio de El Pris, Tacoronte ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387467/youtube_uploads/ftmzua2k6tnze3lahtqz.mp4', 9);
+(23, '2026-04-05 11:10:49.000000', 'El papa León XIV ha afirmado que espera encontrar "mucho amor, hospitalidad y acogida" en su próxima visita a España, un país donde asegura haber encontrado siempre un pueblo de "muy buena voluntad".', b'0', 'El Vaticano', 4.1, 'El papa espera "mucho amor y hospitalidad" en su visita a España en junio ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775383988/youtube_uploads/cpbglko6kznmwlxvinai.mp4', 8),
+(24, '2026-03-22 11:10:49.000000', 'La Policía Local de Arrecife denunció la retirada irregular de multas que suman 575.000 euros, por lo que se está investigando a 7 trabajadores del ayuntamiento de la capital de Lanzarote.', b'0', 'Ayuntamiento de Arrecife', 4.1, 'Investigan a 7 trabajadores del Ayuntamiento de Arrecife por perdonar multas por 600.000 euros ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384106/youtube_uploads/honlinp4ga4nszo0j9gs.mp4', 8),
+(25, '2026-03-21 11:18:00.000000', 'Muchas de las oficinas de CaixaBank en las Islas han estado este viernes cerradas, más del 80 % según los sindicatos. Jornada de huelga de los trabajadores de CaixaBank para reclamar una negociación con la empresa que reduzca la presión comercial que reciben.', b'0', 'CaixaBank, Santa Cruz de Tenerife', 4.0, 'Los trabajadores de CaixaBank denuncian la presión comercial que reciben ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384265/youtube_uploads/am3w43m8qlawsgvri4l1.mp4', 8),
+(26, '2026-03-31 11:18:00.000000', 'La consejera de Sanidad del Gobierno de Canarias, Esther Monzón, ha subrayado la importancia del diálogo en el contexto de la huelga de médicos. Según ha señalado, el Ejecutivo canario ha insistido ante el Ministerio en la necesidad de mantener una comunicación abierta, clara y constante con el comité de huelga.', b'0', 'Gobierno de Canarias', 2.25, 'Canarias hace un llamamiento a la interlocución directa y al consenso por la huelga de médicos ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775384398/youtube_uploads/h3holwby7hlnbtshp22q.mp4', 8),
+(27, '2026-04-03 11:35:59.000000', 'El coste de la reparación del Auditorio de Tenerife será asumido en partes iguales por la empresa que ejecutó el proyecto y por el arquitecto Santiago Calatrava. Una reparación que podría superar los 24 millones de euros. ', b'0', 'Auditorio de Tenerife', 5.0, 'La reparación del Auditorio de Tenerife se asumirá entre la empresa y el arquitecto ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775385351/youtube_uploads/zdkp49cys8sqyrn5xxyy.mp4', 8),
+(28, '2026-04-04 12:04:41.000000', 'Otro de los puntos en el norte de la isla de Tenerife afectado en la tarde-noche del martes fue Puerto de la Cruz. Las lluvias dejaron unos acumulados de más de 60 litros en solo una hora.', b'0', 'Puerto de la Cruz, Tenerife', 4.5, 'Hasta 60 litros por metro cuadrado en solo una hora en Puerto de la Cruz ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387118/youtube_uploads/vicphuqbgcs5esz0yuis.mp4', 9),
+(29, '2026-04-05 12:04:41.000000', 'El aumento de precios en alimentación y transporte obliga a los canarios a buscar alternativas turísticas más económicas para las vacaciones.', b'0', 'Lanzarote', 3.5, 'La inflación dispara los costes del ocio en Semana Santa ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387230/youtube_uploads/vkaormiqghhnmytdcrcv.mp4', 9),
+(30, '2026-02-18 12:08:01.000000', 'Crece la preocupación entre los venezolanos en España por nuevas medidas de regularización ', b'0', 'Canarias', 4.0, 'Crece la preocupación entre los venezolanos en España', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387321/youtube_uploads/ytqgvddog7r9dmqfg3aa.mp4', 9),
+(31, '2026-04-05 12:12:24.000000', 'La gran protagonista en el norte de Tenerife fue la lluvia, en concreto en Tacoronte. La lluvia dejó inundados garajes y bajos de viviendas en el barrio de El Pris, en la costa del municipio', b'0', 'El Pris, Tacoronte ', 3.0, 'Noche complicada en el barrio de El Pris, Tacoronte ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775387467/youtube_uploads/ftmzua2k6tnze3lahtqz.mp4', 9),
+(32, '2026-03-08 21:45:32.000000', 'El proyecto incluye dos cables submarinos, uno hacia Tenerife, impulsado por la empresa Canalink y otro hacia La Palma, junto a Telefónica', b'0', 'El Hierro, Canarias', 5.0, 'El Cabildo de El Hierro coordina el despliegue de nuevos cables submarinos ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775421646/youtube_uploads/rghcdnccefxi9mcrtzka.mp4', 9),
+(33, '2026-03-29 21:49:30.000000', 'El presidente del Gobierno, Pedro Sánchez, ha arremetido este miércoles contra el exjefe del Ejecutivo José María Aznar por su posición en la guerra de Irak, reprochando su catadura moral, y ha acusado al PP y a Vox de seguirle ahora y de cobardía y complicidad por callar ante la crisis en Oriente Medio.', b'0', 'Cortes Generales', 2.5, 'Sánchez acusa a PP y Vox de seguidismo a Aznar y de cobardía ante la guerra de Irán ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775422254/youtube_uploads/ptdzjmd1axvpaqetgulo.mp4', 9),
+(34, '2026-01-21 21:52:46.000000', 'El encarecimiento del combustible preocupa seriamente a los habitantes de La Gomera este 2026. Los ciudadanos demandan soluciones ante una escalada de precios que no ofrece tregua. La insularidad y la orografía obligan al uso constante del vehículo privado en la isla.', b'0', 'La Gomera', 2.0, 'El combustible asfixia el bolsillo de los conductores en La Gomera ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775422355/youtube_uploads/izg5auh2ykizdbqx6iw0.mp4', 9),
+(35, '2026-02-08 21:58:13.000000', 'El agua también ha transformado el paisaje en el parque rural de Anaga, donde los barrancos de Afur presentan cascadas y caudales que no se veían desde hace años.', b'0', 'Anaga, Tenerife', 5.0, 'El agua continúa corriendo por los barrancos del parque rural de Anaga tras el paso de Therese ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775422684/youtube_uploads/r5owjxbxkfv8vpeo8rvp.mp4', 9),
+(36, '2026-04-01 22:04:40.000000', 'El objetivo de esta medida en la presa de La Encantadora es el de ordenar la circulaciónen este enclave natural y prevenir incidencias', b'0', 'Vallehermoso', 4.0, 'Vallehermoso fija un sistema de acceso a la presa de La Encantadora ante la afluencia de visitantes ', 'https://res.cloudinary.com/dldiqcsrh/video/upload/v1775423061/youtube_uploads/tfiuzc2c9rdihr2lmkp2.mp4', 9);
 
 --
 -- Dumping data for table `article_category`
@@ -113,6 +116,7 @@ INSERT INTO `article` (`article_id`, `created_at`, `description`, `is_hidden`, `
 
 INSERT INTO `article_category` (`article_id`, `category_id`) VALUES
 (5, 1),
+(33, 1),
 (1, 2),
 (2, 2),
 (3, 2),
@@ -120,20 +124,21 @@ INSERT INTO `article_category` (`article_id`, `category_id`) VALUES
 (12, 2),
 (20, 2),
 (24, 2),
-(54, 2),
+(30, 2),
 (8, 5),
 (14, 5),
 (18, 5),
 (23, 5),
 (4, 6),
 (10, 6),
+(32, 6),
 (6, 8),
 (15, 11),
 (9, 12),
 (11, 12),
 (12, 12),
 (15, 12),
-(53, 12),
+(29, 12),
 (4, 14),
 (5, 14),
 (1, 15),
@@ -144,14 +149,16 @@ INSERT INTO `article_category` (`article_id`, `category_id`) VALUES
 (19, 15),
 (22, 15),
 (7, 16),
+(25, 16),
 (29, 16),
-(53, 16),
+(34, 16),
 (9, 17),
-(29, 17),
-(30, 17),
+(25, 17),
+(26, 17),
 (4, 18),
+(32, 18),
 (13, 26),
-(31, 26),
+(27, 26),
 (8, 28),
 (14, 28),
 (18, 28),
@@ -162,14 +169,17 @@ INSERT INTO `article_category` (`article_id`, `category_id`) VALUES
 (12, 34),
 (13, 34),
 (17, 34),
-(52, 34),
-(55, 34),
+(28, 34),
+(31, 34),
+(35, 34),
+(36, 34),
 (16, 35),
 (20, 35),
 (21, 35),
-(30, 35),
+(26, 35),
 (2, 41),
 (19, 41);
+
 
 --
 -- Dumping data for table `comment`
@@ -296,7 +306,19 @@ INSERT INTO `comment` (`comment_id`, `comment`, `created_at`, `offense_count`, `
 (118, 'Le falta algo de profundidad.', '2026-04-05 10:55:28.000000', 0, 3.0, 24, 3),
 (119, 'Me encanta leer esta sección.', '2026-04-05 10:55:28.000000', 0, 5.0, 24, 4),
 (120, 'De acuerdo en casi todo.', '2026-04-05 10:55:28.000000', 0, 4.0, 24, 5),
-(122, 'Qué mala calidad el vídeo este.', '2026-04-05 11:00:32.032923', 0, 0.5, 30, 17);
+(122, 'Qué mala calidad el vídeo este.', '2026-04-05 11:00:32.032923', 0, 0.5, 26, 17),
+(123, 'Buen trabajo.', '2026-04-05 18:16:37.470904', 0, 4.0, 26, 14),
+(124, 'Interesante noticia.', '2026-04-05 12:00:00.000000', 0, 4.0, 25, 1),
+(125, 'Buen artículo.', '2026-04-05 12:00:00.000000', 0, 5.0, 27, 2),
+(126, 'Informativo.', '2026-04-05 12:00:00.000000', 0, 4.5, 28, 3),
+(127, 'Preocupante situación.', '2026-04-05 12:00:00.000000', 0, 3.5, 29, 4),
+(128, 'Espero que mejore pronto.', '2026-04-05 12:00:00.000000', 0, 4.0, 30, 5),
+(129, 'Mucha lluvia por la zona.', '2026-04-05 12:00:00.000000', 0, 3.0, 31, 1),
+(130, 'Gran avance tecnológico.', '2026-04-05 12:00:00.000000', 0, 5.0, 32, 2),
+(131, 'La política siempre igual.', '2026-04-05 12:00:00.000000', 0, 2.5, 33, 3),
+(132, 'Muy caro todo, insostenible.', '2026-04-05 12:00:00.000000', 0, 2.0, 34, 4),
+(133, 'Hermoso paisaje natural.', '2026-04-05 12:00:00.000000', 0, 5.0, 35, 5),
+(134, 'Buena medida de control.', '2026-04-05 12:00:00.000000', 0, 4.0, 36, 1);
 
 --
 -- Dumping data for table `comment_report`
@@ -333,28 +355,28 @@ INSERT INTO `moderator_reporter` (`id`, `created_at`, `status`, `moderator_id`, 
 (7, '2026-04-04 19:01:54.000000', 'ACCEPTED', 13, 9),
 (8, '2026-04-04 19:01:54.000000', 'ACCEPTED', 13, 10);
 
-
 --
 -- Dumping data for table `user_category`
 --
 
 INSERT INTO `user_category` (`user_id`, `category_id`) VALUES
-(1, 1),
 (4, 1),
+(6, 1),
 (2, 2),
 (4, 3),
 (3, 4),
 (2, 5),
-(1, 6),
 (5, 6),
 (3, 7),
 (4, 8),
+(6, 8),
 (4, 10),
 (2, 12),
-(16, 15),
-(16, 17),
+(1, 17),
+(16, 18),
 (2, 20),
+(14, 28),
+(16, 28),
 (5, 30),
-(1, 31),
 (5, 32);
 COMMIT;
