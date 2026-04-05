@@ -281,6 +281,59 @@ public class ArticleService {
                 .stream().map(ArticleResponse::new).collect(Collectors.toList());
     }
 
+    /**
+     * Devuelve los artículos de un reporter concreto con filtros opcionales de
+     * fecha y categorías. Solo devuelve artículos visibles.
+     *
+     * @param authorId      identificador del reporter
+     * @param dateFromStr   fecha de inicio (yyyy-MM-dd, opcional)
+     * @param dateToStr     fecha de fin (yyyy-MM-dd, opcional)
+     * @param categoriesStr categorías separadas por coma (opcional)
+     * @param page          número de página
+     * @param size          tamaño de página
+     * @param sortBy        campo de ordenación ("newest", "alphabetical" o "score")
+     * @param order         dirección: "asc" o "desc"
+     * @return página de artículos filtrados
+     */
+    public Page<ArticleResponse> getArticlesByAuthorWithFilters(
+            Integer authorId,
+            String dateFromStr,
+            String dateToStr,
+            String categoriesStr,
+            int page,
+            int size,
+            String sortBy,
+            String order) {
+
+        String sortProperty = "createdAt";
+        if ("alphabetical".equals(sortBy))
+            sortProperty = "title";
+        else if ("score".equals(sortBy))
+            sortProperty = "rating";
+
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        List<String> categories = (categoriesStr != null && !categoriesStr.trim().isEmpty())
+                ? List.of(categoriesStr.split(","))
+                : null;
+
+        return articleRepository.findMyArticlesWithFilters(
+                authorId, Role.REPORTER.name(),
+                dateFrom, dateTo,
+                categories != null, categories,
+                null,
+                pageable).map(ArticleResponse::new);
+    }
+
     // ------------------- EDIT ----------------------
 
     /**
