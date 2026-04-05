@@ -129,7 +129,7 @@ public class CommentController {
      * @return {@code 200 OK} con mensaje de confirmación
      */
     @PutMapping("/{commentId}/approve")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR') or hasAuthority('REPORTER')")
     public ResponseEntity<String> approveComment(@PathVariable Integer commentId, Authentication authentication) {
         commentService.rejectReports(commentId, authentication);
         return ResponseEntity.ok("Comentario aprobado y reportes rechazados");
@@ -143,12 +143,11 @@ public class CommentController {
      * @return {@code 200 OK} con mensaje de confirmación
      */
     @PutMapping("/{commentId}/reject")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR') or hasAuthority('REPORTER')")
     public ResponseEntity<String> rejectComment(@PathVariable Integer commentId, Authentication authentication) {
         commentService.confirmReports(commentId, authentication);
         return ResponseEntity.ok("Comentario marcado como inapropiado y reportes confirmados");
     }
-
     // ------------------- DELETE ----------------------
 
     /**
