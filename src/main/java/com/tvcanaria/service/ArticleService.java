@@ -104,6 +104,33 @@ public class ArticleService {
     }
 
     /**
+     * Devuelve los artículos del feed público de forma paginada, con filtros
+     * opcionales
+     * por categoría y rango de fechas.
+     *
+     * @param categoryId  identificador de la categoría (opcional)
+     * @param dateFromStr fecha de inicio en formato "yyyy-MM-dd" (opcional)
+     * @param dateToStr   fecha de fin en formato "yyyy-MM-dd" (opcional)
+     * @param pageable    parámetros de paginación y ordenación
+     * @return página de artículos del feed público
+     */
+    public Page<ArticleResponse> getPublicFeedArticles(Integer categoryId, String dateFromStr, String dateToStr,
+            Pageable pageable) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDateTime dateFrom = (dateFromStr != null && !dateFromStr.trim().isEmpty())
+                ? LocalDate.parse(dateFromStr, formatter).atStartOfDay()
+                : null;
+
+        LocalDateTime dateTo = (dateToStr != null && !dateToStr.trim().isEmpty())
+                ? LocalDate.parse(dateToStr, formatter).atTime(23, 59, 59)
+                : null;
+
+        return articleRepository.findFeedArticlesWithFilters(categoryId, dateFrom, dateTo, pageable)
+                .map(ArticleResponse::new);
+    }
+
+    /**
      * Obtiene un artículo por su identificador.
      *
      * @param id identificador del artículo

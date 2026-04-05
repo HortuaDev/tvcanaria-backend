@@ -72,14 +72,16 @@ public class ArticleController {
     public ResponseEntity<Page<ArticleResponse>> getAllArticles(
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) Boolean onlyVisible,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             Pageable pageable) {
+
+        if (Boolean.TRUE.equals(onlyVisible)) {
+            return ResponseEntity.ok(articleService.getPublicFeedArticles(categoryId, dateFrom, dateTo, pageable));
+        }
 
         if (categoryId != null) {
             return ResponseEntity.ok(articleService.getArticlesByCategory(categoryId, pageable));
-        }
-
-        if (Boolean.TRUE.equals(onlyVisible)) {
-            return ResponseEntity.ok(articleService.getVisibleArticles(pageable));
         }
 
         return ResponseEntity.ok(articleService.getAllArticles(pageable));
